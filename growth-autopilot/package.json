@@ -28,6 +28,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "runnerless:audit": "echo 'Install @autopilot/audit-cli to enable: pnpm add -D @autopilot/audit-cli'",
     "clean": "rm -rf dist"
   },
   "engines": {
