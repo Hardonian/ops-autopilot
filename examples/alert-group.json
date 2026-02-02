@@ -1,0 +1,66 @@
+{
+  "group_id": "corr-20260201-001",
+  "correlation_rule_id": "same-service-multiple-metrics",
+  "alerts": [
+    {
+      "alert_id": "cw-cpu-001",
+      "tenant_id": "acme-prod",
+      "project_id": "api-platform",
+      "source": "cloudwatch",
+      "status": "open",
+      "title": "High CPU Utilization",
+      "description": "CPU utilization exceeds 80% threshold for 5 consecutive minutes",
+      "severity": "warning",
+      "service": "api-gateway",
+      "metric": "cpu_usage_percent",
+      "threshold": 80,
+      "current_value": 87.5,
+      "timestamp": "2026-02-01T14:23:45Z"
+    },
+    {
+      "alert_id": "cw-mem-002",
+      "tenant_id": "acme-prod",
+      "project_id": "api-platform",
+      "source": "cloudwatch",
+      "status": "open",
+      "title": "Memory Utilization Critical",
+      "description": "Memory utilization exceeds 90% threshold",
+      "severity": "critical",
+      "service": "api-gateway",
+      "metric": "memory_usage_percent",
+      "threshold": 90,
+      "current_value": 94.2,
+      "timestamp": "2026-02-01T14:24:12Z"
+    },
+    {
+      "alert_id": "prom-lat-004",
+      "tenant_id": "acme-prod",
+      "project_id": "api-platform",
+      "source": "prometheus",
+      "status": "open",
+      "title": "P95 Latency Spike",
+      "description": "95th percentile latency exceeds 500ms threshold",
+      "severity": "warning",
+      "service": "api-gateway",
+      "metric": "http_request_duration_seconds",
+      "threshold": 0.5,
+      "current_value": 0.75,
+      "timestamp": "2026-02-01T14:26:30Z"
+    }
+  ],
+  "root_cause_analysis": {
+    "probable_cause": "Resource exhaustion in api-gateway service due to traffic spike",
+    "confidence": 0.85,
+    "contributing_factors": [
+      "High CPU usage (87.5%)",
+      "Critical memory usage (94.2%)",
+      "Latency degradation (P95: 750ms)",
+      "All metrics from same service within 3 minutes"
+    ]
+  },
+  "blast_radius": {
+    "services_affected": ["api-gateway"],
+    "estimated_impact": "high"
+  },
+  "created_at": "2026-02-01T14:26:45Z"
+}
