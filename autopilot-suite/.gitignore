@@ -1,0 +1,11 @@
+.changeset/
+node_modules/
+dist/
+*.log
+.DS_Store
+coverage/
+.vscode/
+.idea/
+*.local
+*.env
+!.env.example
