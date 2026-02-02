@@ -1,0 +1,48 @@
+{
+  "name": "@autopilot/audit-cli",
+  "version": "0.1.0",
+  "description": "CLI tool to audit autopilot modules for runnerless compliance",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "autopilot-suite": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "autopilot",
+    "audit",
+    "runnerless",
+    "compliance",
+    "cli"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@autopilot/contracts": "workspace:*",
+    "commander": "^12.1.0",
+    "chalk": "^5.3.0",
+    "glob": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "eslint": "^8.57.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}

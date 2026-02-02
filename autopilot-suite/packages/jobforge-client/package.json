@@ -1,0 +1,50 @@
+{
+  "name": "@autopilot/jobforge-client",
+  "version": "0.1.0",
+  "description": "Thin JobForge request generator - validates and serializes job requests without execution",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "autopilot",
+    "jobforge",
+    "client",
+    "runnerless"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@autopilot/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0",
+    "@vitest/coverage-v8": "^1.6.0"
+  }
+}
