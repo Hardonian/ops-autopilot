@@ -1,0 +1,40 @@
+[
+  { "user_id": "user_001", "event_name": "page_view", "timestamp": "2024-01-01T10:00:00Z", "properties": { "page": "/landing" } },
+  { "user_id": "user_001", "event_name": "signup_start", "timestamp": "2024-01-01T10:02:00Z", "properties": { "source": "organic" } },
+  { "user_id": "user_001", "event_name": "signup_complete", "timestamp": "2024-01-01T10:05:00Z", "properties": {} },
+  { "user_id": "user_001", "event_name": "activation", "timestamp": "2024-01-01T10:15:00Z", "properties": { "feature": "first_job" } },
+  
+  { "user_id": "user_002", "event_name": "page_view", "timestamp": "2024-01-01T10:30:00Z", "properties": { "page": "/landing" } },
+  { "user_id": "user_002", "event_name": "signup_start", "timestamp": "2024-01-01T10:32:00Z", "properties": { "source": "organic" } },
+  { "user_id": "user_002", "event_name": "signup_complete", "timestamp": "2024-01-01T10:38:00Z", "properties": {} },
+  
+  { "user_id": "user_003", "event_name": "page_view", "timestamp": "2024-01-01T11:00:00Z", "properties": { "page": "/landing" } },
+  { "user_id": "user_003", "event_name": "signup_start", "timestamp": "2024-01-01T11:01:00Z", "properties": { "source": "organic" } },
+  
+  { "user_id": "user_004", "event_name": "page_view", "timestamp": "2024-01-01T11:30:00Z", "properties": { "page": "/landing" } },
+  { "user_id": "user_004", "event_name": "signup_start", "timestamp": "2024-01-01T11:31:00Z", "properties": { "source": "organic" } },
+  { "user_id": "user_004", "event_name": "signup_complete", "timestamp": "2024-01-01T11:35:00Z", "properties": {} },
+  { "user_id": "user_004", "event_name": "activation", "timestamp": "2024-01-01T11:45:00Z", "properties": { "feature": "first_job" } },
+  
+  { "user_id": "user_005", "event_name": "page_view", "timestamp": "2024-01-01T12:00:00Z", "properties": { "page": "/landing" } },
+  
+  { "user_id": "user_006", "event_name": "page_view", "timestamp": "2024-01-01T12:30:00Z", "properties": { "page": "/landing" } },
+  { "user_id": "user_006", "event_name": "signup_start", "timestamp": "2024-01-01T12:32:00Z", "properties": { "source": "organic" } },
+  { "user_id": "user_006", "event_name": "signup_complete", "timestamp": "2024-01-01T12:40:00Z", "properties": {} },
+  { "user_id": "user_006", "event_name": "activation", "timestamp": "2024-01-01T12:50:00Z", "properties": { "feature": "first_job" } },
+  
+  { "user_id": "user_007", "event_name": "page_view", "timestamp": "2024-01-01T13:00:00Z", "properties": { "page": "/landing" } },
+  { "user_id": "user_007", "event_name": "signup_start", "timestamp": "2024-01-01T13:02:00Z", "properties": { "source": "organic" } },
+  { "user_id": "user_007", "event_name": "signup_complete", "timestamp": "2024-01-01T13:08:00Z", "properties": {} },
+  { "user_id": "user_007", "event_name": "activation", "timestamp": "2024-01-01T13:20:00Z", "properties": { "feature": "first_job" } },
+  
+  { "user_id": "user_008", "event_name": "page_view", "timestamp": "2024-01-01T13:30:00Z", "properties": { "page": "/landing" } },
+  { "user_id": "user_008", "event_name": "signup_start", "timestamp": "2024-01-01T13:32:00Z", "properties": { "source": "organic" } },
+  
+  { "user_id": "user_009", "event_name": "page_view", "timestamp": "2024-01-01T14:00:00Z", "properties": { "page": "/landing" } },
+  { "user_id": "user_009", "event_name": "signup_start", "timestamp": "2024-01-01T14:01:00Z", "properties": { "source": "organic" } },
+  { "user_id": "user_009", "event_name": "signup_complete", "timestamp": "2024-01-01T14:05:00Z", "properties": {} },
+  { "user_id": "user_009", "event_name": "activation", "timestamp": "2024-01-01T14:15:00Z", "properties": { "feature": "first_job" } },
+  
+  { "user_id": "user_010", "event_name": "page_view", "timestamp": "2024-01-01T14:30:00Z", "properties": { "page": "/landing" } }
+]
