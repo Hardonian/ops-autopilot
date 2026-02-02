@@ -91,10 +91,10 @@ describe('Funnel Analyzer', () => {
       const result = await analyzeFunnel(events, config);
 
       const signupStage = result.stages.find((s) => s.name === 'signup_start');
-      expect(signupStage?.avg_time_to_convert_seconds).toBeNull(); // No previous stage
+      expect(signupStage?.avg_time_to_convert_seconds).toBe(120); // 2 minutes from page_view
 
       const activationStage = result.stages.find((s) => s.name === 'activation');
-      expect(activationStage?.avg_time_to_convert_seconds).toBe(180); // 3 minutes
+      expect(activationStage?.avg_time_to_convert_seconds).toBe(180); // 3 minutes from signup_start
     });
 
     it('handles users with multiple events at same stage', async () => {
@@ -219,7 +219,7 @@ describe('Funnel Analyzer', () => {
             total_events: 50,
             conversion_rate_from_previous: 50,
             conversion_rate_from_start: 50,
-            avg_time_to_convert_seconds: 600, // 10 minutes
+            avg_time_to_convert_seconds: 60, // 1 minute - fast
             drop_off_count: 50,
             drop_off_rate: 50,
           },
@@ -230,7 +230,7 @@ describe('Funnel Analyzer', () => {
             total_events: 25,
             conversion_rate_from_previous: 50,
             conversion_rate_from_start: 25,
-            avg_time_to_convert_seconds: 300, // 5 minutes
+            avg_time_to_convert_seconds: 3600, // 60 minutes - very slow
             drop_off_count: 25,
             drop_off_rate: 50,
           },

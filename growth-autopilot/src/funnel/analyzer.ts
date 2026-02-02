@@ -6,7 +6,7 @@ import type {
   Evidence,
 } from '../contracts/index.js';
 import { FunnelMetricsSchema } from '../contracts/index.js';
-import { now, deepClone } from '../utils/index.js';
+import { now } from '../utils/index.js';
 
 /**
  * Event data structure for funnel analysis
@@ -167,7 +167,7 @@ function groupEventsByUser(
 function calculateFunnelStages(
   userEvents: Map<string, FunnelEvent[]>,
   stageNames: string[],
-  maxTimestamp: number
+  _maxTimestamp: number
 ): FunnelStage[] {
   const stages: FunnelStage[] = [];
   let previousStageUsers = new Set<string>();

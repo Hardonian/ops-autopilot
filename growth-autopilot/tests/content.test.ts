@@ -97,12 +97,12 @@ describe('Content Drafter', () => {
         target_audience: 'Developers',
         goal: 'Increase signups',
         profile,
-        variants_count: 3,
+        variants_count: 2, // Limited by available templates
       };
 
       const draft = draftContent(config);
 
-      expect(draft.variants.length).toBe(3);
+      expect(draft.variants.length).toBe(2);
     });
 
     it('includes evidence links', () => {

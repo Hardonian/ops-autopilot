@@ -6,7 +6,7 @@ import type {
   ExperimentProposal,
   ContentDraft,
 } from '../contracts/index.js';
-import { JobForgeRequestSchema, JobPrioritySchema } from '../contracts/index.js';
+import { JobForgeRequestSchema } from '../contracts/index.js';
 import { now, generateId } from '../utils/index.js';
 
 /**

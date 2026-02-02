@@ -66,7 +66,7 @@ describe('Experiment Proposer', () => {
       };
 
       const config: ProposerConfig = {
-        tenant_context,
+tenant_context: tenantContext,
         max_proposals: 3,
       };
 
@@ -126,7 +126,7 @@ describe('Experiment Proposer', () => {
       };
 
       const config: ProposerConfig = {
-        tenant_context,
+tenant_context: tenantContext,
         max_proposals: 5,
       };
 
@@ -183,7 +183,7 @@ describe('Experiment Proposer', () => {
       };
 
       const config: ProposerConfig = {
-        tenant_context,
+tenant_context: tenantContext,
         max_proposals: 3,
       };
 
@@ -259,7 +259,7 @@ describe('Experiment Proposer', () => {
       };
 
       const config: ProposerConfig = {
-        tenant_context,
+tenant_context: tenantContext,
         max_proposals: 5,
       };
 
@@ -312,7 +312,7 @@ describe('Experiment Proposer', () => {
       };
 
       const config: ProposerConfig = {
-        tenant_context,
+tenant_context: tenantContext,
         max_proposals: 2,
       };
 
@@ -363,7 +363,7 @@ describe('Experiment Proposer', () => {
       };
 
       const config: ProposerConfig = {
-        tenant_context,
+tenant_context: tenantContext,
         max_proposals: 3,
       };
 

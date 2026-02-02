@@ -17,7 +17,7 @@ export const EvidenceSchema = z.object({
   signal: z.string(),
   location: z.string(),
   severity: z.enum(['critical', 'warning', 'info', 'opportunity']),
-  raw_value: z.union([z.string(), z.number(), z.boolean(), z.null()]).optional(),
+  raw_value: z.union([z.string(), z.number(), z.boolean(), z.null(), z.record(z.unknown()), z.array(z.unknown())]).optional(),
 });
 
 export type Evidence = z.infer<typeof EvidenceSchema>;

@@ -142,7 +142,7 @@ describe('JobForge Integration', () => {
       };
 
       const proposerConfig: ProposerConfig = {
-        tenant_context,
+        tenant_context: tenantContext,
         max_proposals: 2,
       };
 
@@ -199,7 +199,7 @@ describe('JobForge Integration', () => {
       };
 
       const proposerConfig: ProposerConfig = {
-        tenant_context,
+        tenant_context: tenantContext,
         max_proposals: 3,
       };
 

@@ -5,7 +5,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 
 import { scanSEO, type SEOScannerConfig } from './seo/index.js';
-import { analyzeFunnel, loadEventsFromFile, detectFunnelPatterns, type FunnelConfig, type FunnelEvent } from './funnel/index.js';
+import { analyzeFunnel, loadEventsFromFile, detectFunnelPatterns, type FunnelConfig } from './funnel/index.js';
 import { proposeExperiments, rankProposals, type ProposerConfig } from './experiments/index.js';
 import { draftContent, type DrafterConfig } from './content/index.js';
 import { createSEOScanJob, createExperimentJob, createContentDraftJob, serializeJobRequest } from './jobforge/index.js';
@@ -53,7 +53,7 @@ program
       console.log(chalk.green(`\n✓ Scanned ${findings.summary.total_pages} pages`));
       console.log(chalk.yellow(`  Health Score: ${findings.health_score.overall}/100`));
       console.log(chalk.red(`  Critical: ${findings.health_score.issues_by_severity.critical}`));
-      console.log(chalk.orange(`  Warnings: ${findings.health_score.issues_by_severity.warning}`));
+      console.log(chalk.yellow(`  Warnings: ${findings.health_score.issues_by_severity.warning}`));
       console.log(chalk.blue(`  Info: ${findings.health_score.issues_by_severity.info}`));
 
       if (findings.summary.opportunities.length > 0) {
@@ -91,7 +91,7 @@ program
             issue.severity === 'critical'
               ? chalk.red
               : issue.severity === 'warning'
-              ? chalk.orange
+              ? chalk.yellow
               : chalk.gray;
           console.log(color(`  [${issue.severity}] ${issue.type}: ${issue.message}`));
           console.log(chalk.gray(`    → ${issue.recommendation}`));
@@ -144,7 +144,7 @@ program
           : '';
         console.log(chalk.cyan(`  ${stage.name}: ${stage.unique_users} users${arrow}`));
         if (stage.drop_off_rate > 0) {
-          console.log(chalk.orange(`    Drop-off: ${stage.drop_off_rate.toFixed(1)}%`));
+          console.log(chalk.yellow(`    Drop-off: ${stage.drop_off_rate.toFixed(1)}%`));
         }
       });
 
@@ -153,7 +153,7 @@ program
       if (patterns.length > 0) {
         console.log(chalk.magenta('\n🔍 Detected Patterns:'));
         patterns.forEach((pattern) => {
-          const color = pattern.severity === 'critical' ? chalk.red : pattern.severity === 'warning' ? chalk.orange : chalk.gray;
+          const color = pattern.severity === 'critical' ? chalk.red : pattern.severity === 'warning' ? chalk.yellow : chalk.gray;
           console.log(color(`  [${pattern.severity}] ${pattern.pattern}: ${pattern.description}`));
         });
       }

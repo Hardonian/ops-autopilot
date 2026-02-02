@@ -7,10 +7,9 @@ import type {
   SEOIssue,
   SEOHealthScore,
   TenantContext,
-  Evidence,
 } from '../contracts/index.js';
 import { SEOFindingsSchema } from '../contracts/index.js';
-import { now, normalizePath, extractDomain, isAbsoluteUrl } from '../utils/index.js';
+import { now, normalizePath, isAbsoluteUrl } from '../utils/index.js';
 
 /**
  * SEO Scanner configuration
@@ -115,7 +114,9 @@ export async function scanSEO(config: SEOScannerConfig): Promise<SEOFindings> {
     for (const link of page.links) {
       if (!link.is_external && !isAbsoluteUrl(link.href)) {
         const normalizedLink = normalizePath(link.href);
-        if (!pageUrls.has(normalizedLink) && normalizedLink !== '/') {
+        // Try both with and without leading slash
+        const normalizedLinkAlt = normalizedLink.startsWith('/') ? normalizedLink.slice(1) : `/${normalizedLink}`;
+        if (!pageUrls.has(normalizedLink) && !pageUrls.has(normalizedLinkAlt) && normalizedLink !== '/') {
           issues.push({
             type: 'broken_link',
             page: page.url,
@@ -288,7 +289,7 @@ function parseHTML(
  */
 function analyzePage(
   page: PageAnalysis,
-  baseUrl?: string
+  _baseUrl?: string
 ): SEOIssue[] {
   const issues: SEOIssue[] = [];
 
