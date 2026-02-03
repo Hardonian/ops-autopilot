@@ -138,8 +138,8 @@ describe('Contract Schema Compliance', () => {
       const { retry_policy } = HealthAuditCapabilityMetadata.execution_policy;
       expect(retry_policy.backoff_strategy).toBe('exponential');
       expect(retry_policy.max_attempts).toBe(3);
-      expect(retry_policy.initial_delay_ms).toBe(1000);
-      expect(retry_policy.max_delay_ms).toBe(30000);
+      expect(retry_policy.initial_delay_ms).toBe(100); // Optimized for faster recovery
+      expect(retry_policy.max_delay_ms).toBe(5000); // Reduced to avoid thundering herd
     });
 
     it('should define timeout budget', () => {
