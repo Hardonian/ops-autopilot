@@ -175,6 +175,12 @@ class IdempotencyStore {
 // Global idempotency store
 const idempotencyStore = new IdempotencyStore();
 
+// Global circuit breaker shared across all executions
+const globalCircuitBreaker = new CircuitBreaker(
+  HealthAuditCapabilityMetadata.execution_policy.circuit_breaker?.failure_threshold ?? 5,
+  HealthAuditCapabilityMetadata.execution_policy.circuit_breaker?.recovery_timeout_ms ?? 10000
+);
+
 // ============================================================================
 // Retry Logic
 // ============================================================================
@@ -256,18 +262,39 @@ async function performAudit(
     })
   );
 
-  for (const result of healthResults) {
+  for (let i = 0; i < healthResults.length; i++) {
+    const result = healthResults[i];
+    const service = services[i];
+
     if (result.status === 'rejected') {
       // Track dependency failure for potential retry, but continue auditing other services
       hasDependencyFailure = true;
+      const error =
+        result.reason instanceof Error ? result.reason : new Error(String(result.reason));
       if (!dependencyError) {
-        dependencyError =
-          result.reason instanceof Error ? result.reason : new Error(String(result.reason));
+        dependencyError = error;
       }
+
+      // Add finding for this service failure
+      findings.push({
+        id: `finding-${service}-error-${Date.now()}`,
+        severity: 'critical',
+        category: 'dependency_failure',
+        message: `Failed to audit ${service}: ${error.message}`,
+        recommendation: 'Verify monitoring infrastructure connectivity',
+        evidence: [
+          {
+            type: 'error',
+            path: `services/${service}`,
+            value: error.message,
+            description: `Error during ${service} audit`,
+          },
+        ],
+      });
       continue;
     }
 
-    const { service, health } = result.value;
+    const { health } = result.value;
     servicesAudited.push(service);
 
     if (health.status !== 'healthy') {
