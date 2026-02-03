@@ -129,6 +129,11 @@ class CircuitBreaker {
   getState(): CircuitBreakerState {
     return { ...this.state };
   }
+
+  reset(): void {
+    this.state = { status: 'closed', failureCount: 0 };
+    this.state.lastFailureTime = undefined;
+  }
 }
 
 // ============================================================================
