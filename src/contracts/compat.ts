@@ -1,11 +1,6 @@
 import { z } from 'zod';
 import { JobRequestSchema, ReportEnvelopeSchema } from '@autopilot/contracts';
-import {
-  HashSchema,
-  ProjectIdSchema,
-  TenantIdSchema,
-  TimestampSchema,
-} from './base.js';
+import { HashSchema, ProjectIdSchema, TenantIdSchema, TimestampSchema } from './base.js';
 
 export const ModuleIdSchema = z.enum(['ops']);
 export type ModuleId = z.infer<typeof ModuleIdSchema>;

@@ -39,8 +39,14 @@ describe('JobForge integration fixtures', () => {
     const input = readJson('fixtures/jobforge/input.json');
     const result = analyze(input, { stableOutput: true });
 
-    const bundleFixture = readFileSync('fixtures/jobforge/request-bundle.json', 'utf-8');
-    const reportFixture = readFileSync('fixtures/jobforge/report.json', 'utf-8');
+    const bundleFixture = readFileSync('fixtures/jobforge/request-bundle.json', 'utf-8').replace(
+      /\r\n/g,
+      '\n'
+    );
+    const reportFixture = readFileSync('fixtures/jobforge/report.json', 'utf-8').replace(
+      /\r\n/g,
+      '\n'
+    );
     const reportMarkdownFixture = readFileSync('fixtures/jobforge/report.md', 'utf-8');
 
     expect(serializeBundle(result.jobRequestBundle)).toBe(bundleFixture);

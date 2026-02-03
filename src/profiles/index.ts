@@ -21,7 +21,7 @@ export interface Profile {
 
 /**
  * Ops Autopilot Profiles
- * 
+ *
  * Extends base profiles with ops-specific configurations for infrastructure
  * monitoring, alert correlation, and reliability analysis.
  */
@@ -38,11 +38,11 @@ export interface OpsThresholds {
   memory_usage_threshold: { warning: number; critical: number };
   cpu_usage_threshold: { warning: number; critical: number };
   disk_usage_threshold: { warning: number; critical: number };
-  
+
   // Correlation thresholds
   min_alerts_for_correlation: { warning: number; critical: number };
   correlation_confidence_threshold: { warning: number; critical: number };
-  
+
   // Reliability thresholds
   availability_threshold_percent: { warning: number; critical: number };
   mttr_target_minutes: { warning: number; critical: number };
@@ -175,16 +175,16 @@ const opsBaseOverlay: Partial<ProfileConfig> = {
     alert_correlation_window_minutes: { warning: 10, critical: 5, enabled: true },
     error_rate_spike: { warning: 2.0, critical: 5.0, enabled: true },
     latency_p95_spike: { warning: 1.5, critical: 3.0, enabled: true },
-    
+
     // Resource usage
     memory_usage_threshold: { warning: 80, critical: 95, enabled: true },
     cpu_usage_threshold: { warning: 70, critical: 90, enabled: true },
     disk_usage_threshold: { warning: 80, critical: 95, enabled: true },
-    
+
     // Correlation
     min_alerts_for_correlation: { warning: 3, critical: 2, enabled: true },
     correlation_confidence_threshold: { warning: 0.6, critical: 0.8, enabled: true },
-    
+
     // Reliability
     availability_threshold_percent: { warning: 99.0, critical: 99.9, enabled: true },
     mttr_target_minutes: { warning: 60, critical: 15, enabled: true },
@@ -207,7 +207,7 @@ const opsBaseOverlay: Partial<ProfileConfig> = {
     service_criticality: 0.9,
     historical_frequency: 0.6,
     customer_impact: 0.7,
-    
+
     // Correlation weights
     temporal_proximity: 0.8,
     service_dependency: 0.9,
@@ -412,7 +412,7 @@ export function getOpsProfile(id: string): Profile | undefined {
     aias: createAIASOpsProfile(),
     keys: createKeysOpsProfile(),
   };
-  
+
   return profiles[id];
 }
 

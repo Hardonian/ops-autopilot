@@ -9,7 +9,7 @@ import {
 
 /**
  * Runbook Generation
- * 
+ *
  * Generates incident response runbooks based on correlated alerts
  * and infrastructure patterns. All generated runbooks require
  * policy tokens and approval before execution.
@@ -33,7 +33,7 @@ const runbookTemplates: RunbookTemplate[] = [
   {
     name: 'Service Degradation Response',
     description: 'Respond to degraded service performance across multiple metrics',
-    applicableTo: (group) => 
+    applicableTo: group =>
       group.root_cause_analysis.probable_cause.includes('degradation') ||
       group.alerts.some(a => a.title.includes('degradation')),
     generateSteps: () => [
@@ -96,10 +96,10 @@ const runbookTemplates: RunbookTemplate[] = [
   {
     name: 'Cascade Failure Recovery',
     description: 'Recover from cascading failures across multiple services',
-    applicableTo: (group) => 
+    applicableTo: group =>
       group.root_cause_analysis.probable_cause.includes('cascading') ||
       group.blast_radius.services_affected.length > 2,
-    generateSteps: (group) => [
+    generateSteps: group => [
       {
         step_number: 1,
         title: 'Identify Root Cause Service',
@@ -159,9 +159,11 @@ const runbookTemplates: RunbookTemplate[] = [
   {
     name: 'Resource Exhaustion Resolution',
     description: 'Address CPU, memory, or disk resource exhaustion',
-    applicableTo: (group) =>
+    applicableTo: group =>
       group.root_cause_analysis.probable_cause.includes('Resource exhaustion') ||
-      group.alerts.some(a => a.metric?.includes('cpu') || a.metric?.includes('memory') || a.metric?.includes('disk')),
+      group.alerts.some(
+        a => a.metric?.includes('cpu') || a.metric?.includes('memory') || a.metric?.includes('disk')
+      ),
     generateSteps: () => [
       {
         step_number: 1,
@@ -187,7 +189,8 @@ const runbookTemplates: RunbookTemplate[] = [
         step_number: 3,
         title: 'Increase Resource Allocation',
         description: 'Update deployment with higher resource limits',
-        command: 'kubectl set resources deployment {{service}} --limits=cpu={{new_cpu}},memory={{new_memory}}',
+        command:
+          'kubectl set resources deployment {{service}} --limits=cpu={{new_cpu}},memory={{new_memory}}',
         expected_output: 'Resources updated',
         verification: 'New limits applied',
         requires_approval: true,
@@ -217,12 +220,16 @@ const runbookTemplates: RunbookTemplate[] = [
     ],
     estimatedDurationMinutes: 60,
     prerequisites: ['kubectl access', 'Node scaling permissions', 'Deployment update access'],
-    postConditions: ['Resource utilization below 80%', 'No resource alerts', 'Performance normalized'],
+    postConditions: [
+      'Resource utilization below 80%',
+      'No resource alerts',
+      'Performance normalized',
+    ],
   },
   {
     name: 'Database Connection Pool Recovery',
     description: 'Resolve database connection pool exhaustion issues',
-    applicableTo: (group) =>
+    applicableTo: group =>
       group.root_cause_analysis.probable_cause.includes('connection pool') ||
       group.alerts.some(a => a.metric?.includes('connection') || a.title.includes('connection')),
     generateSteps: () => [
@@ -240,7 +247,8 @@ const runbookTemplates: RunbookTemplate[] = [
         step_number: 2,
         title: 'Identify Idle Connections',
         description: 'Find and close idle connections',
-        command: 'psql -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state = \'idle\' AND state_change < now() - interval \'5 minutes\';"',
+        command:
+          "psql -c \"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state = 'idle' AND state_change < now() - interval '5 minutes';\"",
         expected_output: 'Terminated connections',
         verification: 'Idle connections closed',
         requires_approval: true,
@@ -280,13 +288,16 @@ const runbookTemplates: RunbookTemplate[] = [
     ],
     estimatedDurationMinutes: 25,
     prerequisites: ['Database access', 'kubectl access', 'Application deployment access'],
-    postConditions: ['Connection pool healthy', 'No waiting connections', 'Query performance normal'],
+    postConditions: [
+      'Connection pool healthy',
+      'No waiting connections',
+      'Query performance normal',
+    ],
   },
   {
     name: 'Post-Deployment Incident Response',
     description: 'Handle issues following a deployment',
-    applicableTo: (group) =>
-      group.root_cause_analysis.probable_cause.includes('deployment'),
+    applicableTo: group => group.root_cause_analysis.probable_cause.includes('deployment'),
     generateSteps: () => [
       {
         step_number: 1,
@@ -340,7 +351,11 @@ const runbookTemplates: RunbookTemplate[] = [
       },
     ],
     estimatedDurationMinutes: 20,
-    prerequisites: ['kubectl access', 'Previous deployment revision known', 'Health endpoint available'],
+    prerequisites: [
+      'kubectl access',
+      'Previous deployment revision known',
+      'Health endpoint available',
+    ],
     postConditions: ['Deployment rolled back', 'Service stable', 'Error rates normal'],
   },
 ];
@@ -359,13 +374,13 @@ export function generateRunbook(
 ): Runbook {
   // Find matching template
   const template = runbookTemplates.find(t => t.applicableTo(alertGroup));
-  
+
   if (!template) {
     return generateGenericRunbook(alertGroup, options);
   }
-  
+
   const steps = template.generateSteps(alertGroup);
-  
+
   // Apply options
   let finalSteps = steps;
   if (options?.includeRollback === false) {
@@ -374,18 +389,18 @@ export function generateRunbook(
   if (options?.customSteps) {
     finalSteps = [...finalSteps, ...options.customSteps];
   }
-  
+
   // Re-number steps
   finalSteps = finalSteps.map((step, index) => ({
     ...step,
     step_number: index + 1,
     automated: options?.includeAutomation ? step.automated : false,
   }));
-  
+
   const severity = determineSeverity(alertGroup);
   const tenantId = alertGroup.alerts[0]?.tenant_id ?? 'default';
   const projectId = alertGroup.alerts[0]?.project_id ?? 'default';
-  
+
   return {
     runbook_id: generateId(),
     tenant_id: tenantId,
@@ -425,7 +440,7 @@ function generateGenericRunbook(
   const severity = determineSeverity(alertGroup);
   const tenantId = alertGroup.alerts[0]?.tenant_id ?? 'default';
   const projectId = alertGroup.alerts[0]?.project_id ?? 'default';
-  
+
   const steps: RunbookStep[] = [
     {
       step_number: 1,
@@ -476,7 +491,7 @@ function generateGenericRunbook(
       automated: false,
     },
   ];
-  
+
   return {
     runbook_id: generateId(),
     tenant_id: tenantId,
@@ -520,17 +535,17 @@ function findRelatedRunbooks(alertGroup: CorrelatedAlertGroup): string[] {
   // In a real implementation, this would query a runbook database
   // For now, return template names that might be related
   const related: string[] = [];
-  
+
   const services = alertGroup.blast_radius.services_affected;
-  
+
   if (services.length > 2) {
     related.push('Cascade Failure Recovery');
   }
-  
+
   if (alertGroup.alerts.some(a => a.metric?.includes('cpu') || a.metric?.includes('memory'))) {
     related.push('Resource Exhaustion Resolution');
   }
-  
+
   return related;
 }
 
@@ -560,7 +575,7 @@ export function calculateRunbookProgress(
 ): { percent: number; remaining: number } {
   const total = runbook.steps.length;
   const completed = completedSteps.length;
-  
+
   return {
     percent: Math.round((completed / total) * 100),
     remaining: total - completed,

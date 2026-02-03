@@ -3,36 +3,43 @@
 ## Completed Work
 
 ### Stage 0: Suite Consistency Report ✅
+
 Created `SUITE_CONSISTENCY_REPORT.md` analyzing:
+
 - growth-autopilot (reference implementation)
 - Missing items matrix for all 4 repos
 - Normalized conventions for structure, scripts, CI
 - Runnerless compliance check
 
 ### Stage 1: Autopilot Suite Meta-Repo ✅
+
 Created full monorepo at `autopilot-suite/` with:
 
 **Packages:**
+
 1. `@autopilot/contracts` - 8 schema modules (core, tenant, evidence, event, manifest, job, report, profile, redaction, canonical)
 2. `@autopilot/jobforge-client` - Client class, fluent builders, validation
 3. `@autopilot/profiles` - Base profile + overlays (JobForge, Settler, ReadyLayer, AIAS, Keys)
 
-**Apps:**
-4. `@autopilot/audit-cli` - `autopilot-suite audit-runnerless` command
+**Apps:** 4. `@autopilot/audit-cli` - `autopilot-suite audit-runnerless` command
 
 **Infrastructure:**
+
 - pnpm workspaces
 - Changesets for releases
 - CI/CD workflows
 - Full documentation (README, CONTRIBUTING, SECURITY)
 
 ### Stage 2: Applied to Growth-Autopilot ✅
+
 - Updated package.json with `runnerless:audit` script
 - CI workflow already present and comprehensive
 - Added SECURITY.md
 
 ### Stage 3: Integration Recipes ✅
+
 Created `docs/INTEGRATION_RECIPES.md` with:
+
 - Settler integration (funnel analysis)
 - AIAS integration (metric alerts)
 - Keys integration (usage optimization)
@@ -41,7 +48,9 @@ Created `docs/INTEGRATION_RECIPES.md` with:
 - Evidence chaining patterns
 
 ### Stage 4: Verification ✅
+
 All packages include:
+
 - TypeScript strict mode
 - ESLint configuration
 - Vitest test suites
@@ -115,6 +124,7 @@ ops-autopilot/
 ## Next Steps for Full Implementation
 
 1. **Publish packages to npm**:
+
    ```bash
    cd autopilot-suite
    pnpm install
@@ -124,6 +134,7 @@ ops-autopilot/
    ```
 
 2. **Update growth-autopilot to use suite packages**:
+
    ```bash
    cd growth-autopilot
    pnpm add @autopilot/contracts @autopilot/jobforge-client @autopilot/profiles
@@ -134,7 +145,7 @@ ops-autopilot/
    - ops-autopilot
    - support-autopilot
    - finops-autopilot
-   
+
    Use growth-autopilot as template, replace domain logic.
 
 4. **Enable runnerless audit in CI**:
@@ -147,6 +158,7 @@ ops-autopilot/
 ## Runnerless Audit Results
 
 All packages pass runnerless compliance:
+
 - ✅ No job queue libraries
 - ✅ No schedulers
 - ✅ No server frameworks
@@ -185,6 +197,7 @@ If harmonization causes issues:
 ## Summary
 
 Created a complete autopilot-suite meta-repo with:
+
 - 3 shared packages (contracts, jobforge-client, profiles)
 - 1 audit CLI tool
 - Full documentation and CI/CD

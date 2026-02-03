@@ -1,9 +1,5 @@
 import { z } from 'zod';
-import {
-  IdentifierSchema,
-  ISODateTimeSchema,
-  SeveritySchema,
-} from '@autopilot/contracts';
+import { IdentifierSchema, ISODateTimeSchema, SeveritySchema } from '@autopilot/contracts';
 
 export const TenantIdSchema = IdentifierSchema;
 export const ProjectIdSchema = IdentifierSchema;

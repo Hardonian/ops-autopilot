@@ -22,17 +22,19 @@ import {
   type JobRequestBundle,
   type ReportEnvelopeBundle,
 } from '../contracts/compat.js';
-import {
-  correlateAlerts,
-  createAlertCorrelation,
-} from '../alerts/index.js';
+import { correlateAlerts, createAlertCorrelation } from '../alerts/index.js';
 import {
   createAlertCorrelationJobs,
   createReliabilityReportJobs,
   type RunnerlessRequestOptions,
 } from './index.js';
 import { generateReliabilityReport } from '../reports/index.js';
-import { stablePrettyStringify, hashCanonicalJson, sha256Hex, canonicalizeValue } from './canonical.js';
+import {
+  stablePrettyStringify,
+  hashCanonicalJson,
+  sha256Hex,
+  canonicalizeValue,
+} from './canonical.js';
 import { VERSION } from '../index.js';
 
 export const AnalyzeInputSchema = z.object({
@@ -72,7 +74,9 @@ function buildEvidence(
   rawValue?: Evidence['raw_value']
 ): Evidence {
   const idSeed = `${traceId}:${description}`;
-  const id = stableOutput ? `ev-${sha256Hex(idSeed).slice(0, 12)}` : `ev-${sha256Hex(`${idSeed}:${Date.now()}`).slice(0, 12)}`;
+  const id = stableOutput
+    ? `ev-${sha256Hex(idSeed).slice(0, 12)}`
+    : `ev-${sha256Hex(`${idSeed}:${Date.now()}`).slice(0, 12)}`;
   return {
     id,
     type: 'signal',
@@ -98,7 +102,7 @@ function buildReportEnvelope(
     project_id: input.project_id,
   };
 
-  const criticalAlerts = alerts.filter((alert) => alert.severity === 'critical');
+  const criticalAlerts = alerts.filter(alert => alert.severity === 'critical');
   const evidence: Evidence[] = [];
   const recommendations = [];
 
@@ -114,13 +118,15 @@ function buildReportEnvelope(
     );
     const recIdSeed = `${input.trace_id}:critical-alerts`;
     recommendations.push({
-      id: stableOutput ? `rec-${sha256Hex(recIdSeed).slice(0, 12)}` : `rec-${sha256Hex(`${recIdSeed}:${Date.now()}`).slice(0, 12)}`,
+      id: stableOutput
+        ? `rec-${sha256Hex(recIdSeed).slice(0, 12)}`
+        : `rec-${sha256Hex(`${recIdSeed}:${Date.now()}`).slice(0, 12)}`,
       title: 'Review critical alert patterns',
       description: 'Investigate recent critical alerts and validate runbook coverage.',
       action: 'request_job',
       severity: 'critical',
       evidence: [...evidence],
-      job_request: jobRequests.find((request) => request.payload.action === 'investigate_and_notify'),
+      job_request: jobRequests.find(request => request.payload.action === 'investigate_and_notify'),
       requires_review: true,
       reviewer_roles: ['oncall', 'ops-lead'],
     });
@@ -132,10 +138,10 @@ function buildReportEnvelope(
       info: 0,
       opportunity: 0,
       warning: 0,
-      critical: evidence.filter((item) => item.severity === 'critical').length,
+      critical: evidence.filter(item => item.severity === 'critical').length,
     },
     total_recommendations: recommendations.length,
-    actionable_count: recommendations.filter((rec) => rec.action !== 'observe').length,
+    actionable_count: recommendations.filter(rec => rec.action !== 'observe').length,
   };
 
   return ReportEnvelopeSchema.parse({
@@ -178,9 +184,14 @@ function normalizeCorrelation(
   correlation: ReturnType<typeof createAlertCorrelation>,
   traceId: string
 ): AlertCorrelation {
-  const correlationSeed = sha256Hex(`${traceId}:${correlation.tenant_id}:${correlation.project_id}`);
+  const correlationSeed = sha256Hex(
+    `${traceId}:${correlation.tenant_id}:${correlation.project_id}`
+  );
   const normalizedGroups = correlation.groups.map((group, index) => {
-    const alertIds = group.alerts.map((alert) => alert.alert_id).sort().join(',');
+    const alertIds = group.alerts
+      .map(alert => alert.alert_id)
+      .sort()
+      .join(',');
     const groupSeed = sha256Hex(`${correlationSeed}:${index}:${alertIds}`);
     return {
       ...group,
@@ -200,7 +211,7 @@ function normalizeCorrelation(
 function withIdempotency(
   requests: JobRequestBundle['requests']
 ): Array<{ request: JobRequestBundle['requests'][number]; idempotency_key: string }> {
-  return requests.map((request) => {
+  return requests.map(request => {
     const seed = canonicalizeValue({
       job_type: request.job_type,
       tenant_context: request.tenant_context,
@@ -225,7 +236,7 @@ function normalizeJobRequests(
   requests: JobRequestBundle['requests'],
   traceId: string
 ): JobRequestBundle['requests'] {
-  return requests.map((request) => {
+  return requests.map(request => {
     const payload = { ...(request.payload as Record<string, unknown>) };
 
     if (typeof payload.recommendation_id === 'string') {
@@ -258,8 +269,8 @@ function buildJobRequestBundle(
   const withKeys = withIdempotency(requests);
   const sortedRequests = [...withKeys]
     .sort((a, b) => a.request.job_type.localeCompare(b.request.job_type))
-    .map((entry) => entry.request);
-  const idempotency_keys = withKeys.map((entry) => ({
+    .map(entry => entry.request);
+  const idempotency_keys = withKeys.map(entry => ({
     job_type: entry.request.job_type,
     idempotency_key: entry.idempotency_key,
   }));
@@ -344,11 +355,17 @@ export function analyze(
   const alerts = validated.alerts ?? [];
   const correlationResult = alerts.length > 0 ? correlateAlerts(alerts) : undefined;
   const correlation = correlationResult
-    ? createAlertCorrelation(validated.tenant_id, validated.project_id, correlationResult, validated.profile_id)
+    ? createAlertCorrelation(
+        validated.tenant_id,
+        validated.project_id,
+        correlationResult,
+        validated.profile_id
+      )
     : undefined;
-  const normalizedCorrelation = correlation && stableOutput
-    ? normalizeCorrelation(correlation, validated.trace_id)
-    : correlation;
+  const normalizedCorrelation =
+    correlation && stableOutput
+      ? normalizeCorrelation(correlation, validated.trace_id)
+      : correlation;
 
   const reliabilityReport = generateReliabilityReport(validated.report, alerts, {
     stableOutput,
@@ -371,7 +388,12 @@ export function analyze(
     : jobRequests;
 
   const jobRequestBundle = buildJobRequestBundle(validated, stableRequests, stableOutput);
-  const reportEnvelope = buildReportEnvelope(validated, alerts, jobRequestBundle.requests, stableOutput);
+  const reportEnvelope = buildReportEnvelope(
+    validated,
+    alerts,
+    jobRequestBundle.requests,
+    stableOutput
+  );
   const reportEnvelopeBundle = buildReportBundle(
     validated,
     reportEnvelope,
@@ -392,7 +414,7 @@ export function validateBundle(bundle: unknown): { valid: boolean; errors: strin
   }
   return {
     valid: false,
-    errors: result.error.errors.map((issue) => `${issue.path.join('.')}: ${issue.message}`),
+    errors: result.error.errors.map(issue => `${issue.path.join('.')}: ${issue.message}`),
   };
 }
 
@@ -403,7 +425,7 @@ export function validateReportBundle(bundle: unknown): { valid: boolean; errors:
   }
   return {
     valid: false,
-    errors: result.error.errors.map((issue) => `${issue.path.join('.')}: ${issue.message}`),
+    errors: result.error.errors.map(issue => `${issue.path.join('.')}: ${issue.message}`),
   };
 }
 

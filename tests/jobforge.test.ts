@@ -15,14 +15,11 @@ describe('JobForge Request Generation', () => {
 
   describe('createAlertCorrelationRequest', () => {
     it('should create valid alert correlation request', () => {
-      const request = createAlertCorrelationRequest(
-        tenantContext,
-        {
-          alert_ids: ['alert-1', 'alert-2'],
-          time_window_minutes: 10,
-          profile_id: 'ops-base',
-        }
-      );
+      const request = createAlertCorrelationRequest(tenantContext, {
+        alert_ids: ['alert-1', 'alert-2'],
+        time_window_minutes: 10,
+        profile_id: 'ops-base',
+      });
 
       expect(request.tenant_context.tenant_id).toBe('test-tenant');
       expect(request.tenant_context.project_id).toBe('test-project');
@@ -31,13 +28,10 @@ describe('JobForge Request Generation', () => {
     });
 
     it('should enforce runnerless policy constraints', () => {
-      const request = createAlertCorrelationRequest(
-        tenantContext,
-        {
-          alert_ids: ['alert-1'],
-          profile_id: 'ops-base',
-        }
-      );
+      const request = createAlertCorrelationRequest(tenantContext, {
+        alert_ids: ['alert-1'],
+        profile_id: 'ops-base',
+      });
 
       expect(request.policy.requires_approval).toBe(true);
       expect(request.policy.requires_policy_token).toBe(true);
@@ -47,19 +41,16 @@ describe('JobForge Request Generation', () => {
 
   describe('createRunbookGenerationRequest', () => {
     it('should create valid runbook generation request', () => {
-      const request = createRunbookGenerationRequest(
-        tenantContext,
-        {
-          alert_group_id: 'group-1',
-          alert_ids: ['alert-1', 'alert-2'],
-          root_cause: 'Resource exhaustion',
-          affected_services: ['api-service'],
-          severity: 'warning',
-          include_rollback: true,
-          include_automation: false,
-          profile_id: 'ops-base',
-        }
-      );
+      const request = createRunbookGenerationRequest(tenantContext, {
+        alert_group_id: 'group-1',
+        alert_ids: ['alert-1', 'alert-2'],
+        root_cause: 'Resource exhaustion',
+        affected_services: ['api-service'],
+        severity: 'warning',
+        include_rollback: true,
+        include_automation: false,
+        profile_id: 'ops-base',
+      });
 
       expect(request.job_type).toBe('autopilot.ops.runbook_generate');
       expect(request.payload.alert_ids).toHaveLength(2);
@@ -67,19 +58,16 @@ describe('JobForge Request Generation', () => {
     });
 
     it('should enforce runnerless policy constraints', () => {
-      const request = createRunbookGenerationRequest(
-        tenantContext,
-        {
-          alert_group_id: 'group-1',
-          alert_ids: ['alert-1'],
-          root_cause: 'Test',
-          affected_services: ['svc'],
-          severity: 'critical',
-          include_rollback: true,
-          include_automation: false,
-          profile_id: 'ops-base',
-        }
-      );
+      const request = createRunbookGenerationRequest(tenantContext, {
+        alert_group_id: 'group-1',
+        alert_ids: ['alert-1'],
+        root_cause: 'Test',
+        affected_services: ['svc'],
+        severity: 'critical',
+        include_rollback: true,
+        include_automation: false,
+        profile_id: 'ops-base',
+      });
 
       expect(request.policy.requires_approval).toBe(true);
       expect(request.policy.requires_policy_token).toBe(true);
@@ -89,17 +77,14 @@ describe('JobForge Request Generation', () => {
 
   describe('createReliabilityReportRequest', () => {
     it('should create valid reliability report request', () => {
-      const request = createReliabilityReportRequest(
-        tenantContext,
-        {
-          report_type: 'health_check',
-          period_start: '2026-01-01T00:00:00Z',
-          period_end: '2026-01-31T23:59:59Z',
-          include_anomalies: true,
-          include_recommendations: true,
-          profile_id: 'ops-base',
-        }
-      );
+      const request = createReliabilityReportRequest(tenantContext, {
+        report_type: 'health_check',
+        period_start: '2026-01-01T00:00:00Z',
+        period_end: '2026-01-31T23:59:59Z',
+        include_anomalies: true,
+        include_recommendations: true,
+        profile_id: 'ops-base',
+      });
 
       expect(request.job_type).toBe('autopilot.ops.reliability_report');
       expect(request.payload.report_type).toBe('health_check');
@@ -107,37 +92,36 @@ describe('JobForge Request Generation', () => {
     });
 
     it('should support different report types', () => {
-      const reportTypes = ['incident_postmortem', 'health_check', 'trend_analysis', 'compliance'] as const;
+      const reportTypes = [
+        'incident_postmortem',
+        'health_check',
+        'trend_analysis',
+        'compliance',
+      ] as const;
 
       for (const reportType of reportTypes) {
-        const request = createReliabilityReportRequest(
-          tenantContext,
-          {
-            report_type: reportType,
-            period_start: '2026-01-01T00:00:00Z',
-            period_end: '2026-01-31T23:59:59Z',
-            include_anomalies: true,
-            include_recommendations: true,
-            profile_id: 'ops-base',
-          }
-        );
+        const request = createReliabilityReportRequest(tenantContext, {
+          report_type: reportType,
+          period_start: '2026-01-01T00:00:00Z',
+          period_end: '2026-01-31T23:59:59Z',
+          include_anomalies: true,
+          include_recommendations: true,
+          profile_id: 'ops-base',
+        });
 
         expect(request.payload.report_type).toBe(reportType);
       }
     });
 
     it('should enforce runnerless policy constraints', () => {
-      const request = createReliabilityReportRequest(
-        tenantContext,
-        {
-          report_type: 'health_check',
-          period_start: '2026-01-01T00:00:00Z',
-          period_end: '2026-01-31T23:59:59Z',
-          include_anomalies: true,
-          include_recommendations: true,
-          profile_id: 'ops-base',
-        }
-      );
+      const request = createReliabilityReportRequest(tenantContext, {
+        report_type: 'health_check',
+        period_start: '2026-01-01T00:00:00Z',
+        period_end: '2026-01-31T23:59:59Z',
+        include_anomalies: true,
+        include_recommendations: true,
+        profile_id: 'ops-base',
+      });
 
       expect(request.policy.requires_approval).toBe(true);
       expect(request.policy.requires_policy_token).toBe(true);
@@ -147,13 +131,10 @@ describe('JobForge Request Generation', () => {
 
   describe('validateJobRequest', () => {
     it('should validate correct job request', () => {
-      const request = createAlertCorrelationRequest(
-        tenantContext,
-        {
-          alert_ids: ['alert-1'],
-          profile_id: 'ops-base',
-        }
-      );
+      const request = createAlertCorrelationRequest(tenantContext, {
+        alert_ids: ['alert-1'],
+        profile_id: 'ops-base',
+      });
 
       const result = validateJobRequest(request);
       expect(result.valid).toBe(true);

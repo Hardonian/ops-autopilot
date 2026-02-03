@@ -27,7 +27,7 @@ export function generateReliabilityReport(
 
   let criticalAlerts: Alert[] = [];
   if (alerts.length > 0) {
-    criticalAlerts = alerts.filter((alert) => alert.severity === 'critical');
+    criticalAlerts = alerts.filter(alert => alert.severity === 'critical');
     if (criticalAlerts.length > 0) {
       const findingId = options.stableOutput ? STABLE_ID : generateId();
       findings.push({
@@ -85,8 +85,9 @@ export function generateReliabilityReport(
     }
   }
 
-  const healthScore = Math.max(0, 100 - (criticalAlerts?.length ?? 0) * 10 - (anomalies.length * 5));
-  const generatedAt = options.generatedAt ?? (options.stableOutput ? STABLE_TIMESTAMP : new Date().toISOString());
+  const healthScore = Math.max(0, 100 - (criticalAlerts?.length ?? 0) * 10 - anomalies.length * 5);
+  const generatedAt =
+    options.generatedAt ?? (options.stableOutput ? STABLE_TIMESTAMP : new Date().toISOString());
 
   const report = {
     report_id: options.stableOutput ? STABLE_ID : generateId(),
@@ -103,7 +104,9 @@ export function generateReliabilityReport(
     recommendations,
     job_requests: [],
     profile_id: input.profile_id,
-    report_hash: computeHash(`${input.tenant_id}:${input.project_id}:${input.period_start}:${input.period_end}`),
+    report_hash: computeHash(
+      `${input.tenant_id}:${input.project_id}:${input.period_start}:${input.period_end}`
+    ),
     redaction_applied: true,
   };
 

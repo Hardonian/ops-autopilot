@@ -1,12 +1,12 @@
 /**
  * Ops Autopilot - Runnerless Reliability Autopilot
- * 
+ *
  * A runnerless module that:
  * - Consumes events, manifests, and log summaries
  * - Detects infrastructure anomalies
  * - Produces diagnoses and recommendations
  * - Outputs JobForge job requests (without owning execution)
- * 
+ *
  * All job requests enforce:
  * - auto_execute: false (no local execution)
  * - require_approval: true (human approval required)
@@ -33,7 +33,7 @@ export {
   type EvidenceLink,
   type Finding,
   type JobRequest,
-  
+
   // Alert schemas
   AlertSchema,
   AlertSourceSchema,
@@ -47,13 +47,13 @@ export {
   type CorrelationRule,
   type CorrelatedAlertGroup,
   type AlertCorrelation,
-  
+
   // Runbook schemas
   RunbookSchema,
   RunbookStepSchema,
   type Runbook,
   type RunbookStep,
-  
+
   // Report schemas
   ReliabilityMetricSchema,
   InfrastructureHealthSchema,
@@ -63,7 +63,7 @@ export {
   type InfrastructureHealth,
   type AnomalyDetection,
   type ReliabilityReport,
-  
+
   // Input schemas
   IngestInputSchema,
   CorrelationInputSchema,
@@ -73,7 +73,7 @@ export {
   type CorrelationInput,
   type RunbookInput,
   type ReportInput,
-  
+
   // Utilities
   generateId,
   computeHash,
@@ -96,10 +96,10 @@ export {
   calculateAlertMetrics,
   groupAlertsByService,
   groupAlertsBySource,
-  
+
   // Constants
   defaultCorrelationRules,
-  
+
   // Types
   type AlertFilter,
   type CorrelationResult,
@@ -133,7 +133,7 @@ export {
   createReliabilityReportRequest,
   createReliabilityReportJobs,
   createOpsJobBatch,
-  
+
   // Types
   type AlertCorrelationJobPayload,
   type RunbookGenerationJobPayload,
@@ -170,7 +170,7 @@ export {
   createKeysOpsProfile,
   getOpsThreshold,
   checkOpsThreshold,
-  
+
   // Re-exports from profiles
   type Profile,
   type ProfileConfig,

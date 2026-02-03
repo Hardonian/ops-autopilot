@@ -21,7 +21,7 @@ import {
 
 /**
  * Ops Autopilot Contracts
- * 
+ *
  * Domain-specific schemas for infrastructure reliability, alert correlation,
  * runbook generation, and reliability reporting.
  */
@@ -60,12 +60,7 @@ export const AlertSourceSchema = z.enum([
   'custom',
 ]);
 
-export const AlertStatusSchema = z.enum([
-  'open',
-  'acknowledged',
-  'resolved',
-  'suppressed',
-]);
+export const AlertStatusSchema = z.enum(['open', 'acknowledged', 'resolved', 'suppressed']);
 
 export const AlertSchema = z.object({
   alert_id: z.string().min(1),
@@ -98,11 +93,13 @@ export const CorrelationRuleSchema = z.object({
   name: z.string().min(1),
   description: z.string(),
   enabled: z.boolean().default(true),
-  match_criteria: z.array(z.object({
-    field: z.enum(['source', 'service', 'severity', 'metric', 'title']),
-    operator: z.enum(['equals', 'contains', 'regex', 'prefix']),
-    value: z.string(),
-  })),
+  match_criteria: z.array(
+    z.object({
+      field: z.enum(['source', 'service', 'severity', 'metric', 'title']),
+      operator: z.enum(['equals', 'contains', 'regex', 'prefix']),
+      value: z.string(),
+    })
+  ),
   time_window_minutes: z.number().int().min(1).default(10),
   correlation_logic: z.enum(['same_service', 'same_metric', 'common_source', 'custom']),
   min_alerts: z.number().int().min(2).default(2),
@@ -166,12 +163,14 @@ export const RunbookSchema = z.object({
   project_id: ProjectIdSchema,
   name: z.string().min(1),
   description: z.string(),
-  trigger_conditions: z.array(z.object({
-    alert_source: AlertSourceSchema.optional(),
-    alert_title_pattern: z.string().optional(),
-    service: z.string().optional(),
-    metric: z.string().optional(),
-  })),
+  trigger_conditions: z.array(
+    z.object({
+      alert_source: AlertSourceSchema.optional(),
+      alert_title_pattern: z.string().optional(),
+      service: z.string().optional(),
+      metric: z.string().optional(),
+    })
+  ),
   severity: SeveritySchema,
   estimated_duration_minutes: z.number().int().min(1),
   steps: z.array(RunbookStepSchema),
@@ -223,11 +222,13 @@ export const AnomalyDetectionSchema = z.object({
   observed_value: z.number(),
   deviation_percent: z.number(),
   contributing_factors: z.array(z.string()),
-  historical_context: z.object({
-    similar_incidents_count: z.number().int(),
-    last_similar_incident: TimestampSchema.optional(),
-    typical_resolution_time_minutes: z.number().optional(),
-  }).optional(),
+  historical_context: z
+    .object({
+      similar_incidents_count: z.number().int(),
+      last_similar_incident: TimestampSchema.optional(),
+      typical_resolution_time_minutes: z.number().optional(),
+    })
+    .optional(),
 });
 
 export const ReliabilityReportSchema = z.object({
@@ -242,14 +243,16 @@ export const ReliabilityReportSchema = z.object({
   service_health: z.array(InfrastructureHealthSchema),
   anomalies: z.array(AnomalyDetectionSchema),
   findings: z.array(FindingSchema),
-  recommendations: z.array(z.object({
-    priority: z.enum(['low', 'medium', 'high', 'critical']),
-    category: z.string(),
-    description: z.string(),
-    expected_impact: z.string(),
-    implementation_effort: z.enum(['low', 'medium', 'high']),
-    related_findings: z.array(z.string()),
-  })),
+  recommendations: z.array(
+    z.object({
+      priority: z.enum(['low', 'medium', 'high', 'critical']),
+      category: z.string(),
+      description: z.string(),
+      expected_impact: z.string(),
+      implementation_effort: z.enum(['low', 'medium', 'high']),
+      related_findings: z.array(z.string()),
+    })
+  ),
   job_requests: z.array(JobRequestSchema),
   profile_id: z.string(),
   report_hash: HashSchema,
@@ -274,10 +277,12 @@ export const IngestInputSchema = z.object({
   log_summary: z.string().optional(),
   manifest_path: z.string().optional(),
   profile_id: z.string().default('base'),
-  time_range: z.object({
-    start: TimestampSchema,
-    end: TimestampSchema,
-  }).optional(),
+  time_range: z
+    .object({
+      start: TimestampSchema,
+      end: TimestampSchema,
+    })
+    .optional(),
 });
 
 export const CorrelationInputSchema = z.object({

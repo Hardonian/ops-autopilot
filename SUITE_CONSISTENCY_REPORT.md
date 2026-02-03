@@ -14,24 +14,24 @@ Based on inspection of `growth-autopilot` (the reference implementation), this r
 
 ## A) Repo → Missing Items Matrix
 
-| Component | ops-autopilot | support-autopilot | growth-autopilot | finops-autopilot |
-|-----------|---------------|-------------------|------------------|------------------|
-| **Availability** | ❌ Not present | ❌ Not present | ✅ Present | ❌ Not present |
-| **Folder Structure** | ❌ Unknown | ❌ Unknown | ✅ Complete | ❌ Unknown |
-| **package.json** | ❌ Unknown | ❌ Unknown | ✅ Present | ❌ Unknown |
-| **tsconfig.json** | ❌ Unknown | ❌ Unknown | ✅ Present | ❌ Unknown |
-| **.eslintrc.cjs** | ❌ Unknown | ❌ Unknown | ✅ Present | ❌ Unknown |
-| **vitest.config.ts** | ❌ Unknown | ❌ Unknown | ✅ Present | ❌ Unknown |
-| **/src/contracts** | ❌ Unknown | ❌ Unknown | ✅ Present | ❌ Unknown |
-| **/src/jobforge** | ❌ Unknown | ❌ Unknown | ✅ Present | ❌ Unknown |
-| **/src/profiles** | ❌ Unknown | ❌ Unknown | ✅ Present | ❌ Unknown |
-| **CLI entrypoint** | ❌ Unknown | ❌ Unknown | ✅ Present | ❌ Unknown |
-| **/tests/** | ❌ Unknown | ❌ Unknown | ✅ Present (8 files) | ❌ Unknown |
-| **/examples/** | ❌ Unknown | ❌ Unknown | ✅ Present | ❌ Unknown |
-| **CI Workflows** | ❌ Unknown | ❌ Unknown | ❌ Missing (.github empty) | ❌ Unknown |
-| **CONTRIBUTING.md** | ❌ Unknown | ❌ Unknown | ✅ Present | ❌ Unknown |
-| **LICENSE** | ❌ Unknown | ❌ Unknown | ✅ Present | ❌ Unknown |
-| **Runnerless Audit** | ❌ Unknown | ❌ Unknown | ✅ Pass (no violations) | ❌ Unknown |
+| Component            | ops-autopilot  | support-autopilot | growth-autopilot           | finops-autopilot |
+| -------------------- | -------------- | ----------------- | -------------------------- | ---------------- |
+| **Availability**     | ❌ Not present | ❌ Not present    | ✅ Present                 | ❌ Not present   |
+| **Folder Structure** | ❌ Unknown     | ❌ Unknown        | ✅ Complete                | ❌ Unknown       |
+| **package.json**     | ❌ Unknown     | ❌ Unknown        | ✅ Present                 | ❌ Unknown       |
+| **tsconfig.json**    | ❌ Unknown     | ❌ Unknown        | ✅ Present                 | ❌ Unknown       |
+| **.eslintrc.cjs**    | ❌ Unknown     | ❌ Unknown        | ✅ Present                 | ❌ Unknown       |
+| **vitest.config.ts** | ❌ Unknown     | ❌ Unknown        | ✅ Present                 | ❌ Unknown       |
+| **/src/contracts**   | ❌ Unknown     | ❌ Unknown        | ✅ Present                 | ❌ Unknown       |
+| **/src/jobforge**    | ❌ Unknown     | ❌ Unknown        | ✅ Present                 | ❌ Unknown       |
+| **/src/profiles**    | ❌ Unknown     | ❌ Unknown        | ✅ Present                 | ❌ Unknown       |
+| **CLI entrypoint**   | ❌ Unknown     | ❌ Unknown        | ✅ Present                 | ❌ Unknown       |
+| **/tests/**          | ❌ Unknown     | ❌ Unknown        | ✅ Present (8 files)       | ❌ Unknown       |
+| **/examples/**       | ❌ Unknown     | ❌ Unknown        | ✅ Present                 | ❌ Unknown       |
+| **CI Workflows**     | ❌ Unknown     | ❌ Unknown        | ❌ Missing (.github empty) | ❌ Unknown       |
+| **CONTRIBUTING.md**  | ❌ Unknown     | ❌ Unknown        | ✅ Present                 | ❌ Unknown       |
+| **LICENSE**          | ❌ Unknown     | ❌ Unknown        | ✅ Present                 | ❌ Unknown       |
+| **Runnerless Audit** | ❌ Unknown     | ❌ Unknown        | ✅ Pass (no violations)    | ❌ Unknown       |
 
 **Legend**: ✅ Present/Correct | ⚠️ Partial/Drift | ❌ Missing
 
@@ -40,6 +40,7 @@ Based on inspection of `growth-autopilot` (the reference implementation), this r
 ## B) Reference Implementation Analysis: growth-autopilot
 
 ### Structure (Correct)
+
 ```
 growth-autopilot/
 ├── src/
@@ -80,6 +81,7 @@ growth-autopilot/
 ```
 
 ### Package Scripts (growth-autopilot)
+
 ```json
 {
   "build": "tsc",
@@ -97,6 +99,7 @@ growth-autopilot/
 **Missing**: `runnerless:audit` script
 
 ### TypeScript Configuration (Correct)
+
 - Target: ES2022
 - Module: NodeNext
 - Strict mode enabled
@@ -104,10 +107,12 @@ growth-autopilot/
 - Source maps enabled
 
 ### Dependencies (Correct)
+
 **Runtime**: zod, commander, cheerio, glob, chalk  
 **Dev**: typescript, vitest, eslint, tsx, @types/node
 
 ### Contracts Schema Quality (Excellent)
+
 ✅ TenantContextSchema with tenant_id + project_id  
 ✅ EvidenceSchema for traceability  
 ✅ JobForgeRequestSchema for job requests  
@@ -115,6 +120,7 @@ growth-autopilot/
 ✅ Domain-specific schemas (SEOFindings, FunnelMetrics, etc.)
 
 ### JobForge Client Quality (Good)
+
 ✅ Creates request payloads only (no execution)  
 ✅ Includes cost estimation  
 ✅ Evidence linking  
@@ -123,6 +129,7 @@ growth-autopilot/
 ✅ Mock response generator for testing
 
 ### Profile System Quality (Excellent)
+
 ✅ Base profile with sensible defaults  
 ✅ Per-app overlays: jobforge, settler, readylayer, aias, keys  
 ✅ Deep merge extension function  
@@ -130,6 +137,7 @@ growth-autopilot/
 ✅ ICP, voice, keywords, prohibited_claims, features
 
 ### Runnerless Compliance (✅ PASS)
+
 - ✅ No worker/scheduler libraries
 - ✅ No server listeners (except CLI example)
 - ✅ No secret management code
@@ -138,6 +146,7 @@ growth-autopilot/
 - ✅ No network calls to JobForge by default
 
 ### CI/CD Status (⚠️ MISSING)
+
 - ❌ No GitHub Actions workflows
 - ❌ No automated testing on PR
 - ❌ No release automation
@@ -148,6 +157,7 @@ growth-autopilot/
 ## C) Normalized Conventions (To Apply to All Modules)
 
 ### 1. Folder Structure Convention
+
 ```
 {module}-autopilot/
 ├── src/
@@ -179,6 +189,7 @@ growth-autopilot/
 ```
 
 ### 2. Package.json Template
+
 ```json
 {
   "name": "{module}-autopilot",
@@ -223,6 +234,7 @@ growth-autopilot/
 ```
 
 ### 3. CI Workflow Template
+
 ```yaml
 # .github/workflows/ci.yml
 name: CI
@@ -241,45 +253,49 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
-      - run: pnpm runnerless:audit  # Must pass
+      - run: pnpm runnerless:audit # Must pass
 ```
 
 ### 4. Required Files Checklist
 
-| File | Purpose | Enforcement |
-|------|---------|-------------|
-| `src/contracts/index.ts` | Re-export suite contracts + local schemas | Required |
-| `src/jobforge/index.ts` | Use suite jobforge-client | Required |
-| `src/profiles/index.ts` | Extend suite profiles | Required |
-| `src/cli.ts` | Commander CLI with --tenant and --project flags | Required |
-| `src/index.ts` | Public API exports | Required |
-| `tests/*.test.ts` | Vitest tests with coverage | Required |
-| `.github/workflows/ci.yml` | Automated validation | Required |
-| `README.md` | Standard format | Required |
-| `CONTRIBUTING.md` | Contribution guidelines | Required |
-| `LICENSE` | MIT license | Required |
-| `CHANGELOG.md` | Auto-generated | Auto |
-| `SECURITY.md` | Security policy | Required |
+| File                       | Purpose                                         | Enforcement |
+| -------------------------- | ----------------------------------------------- | ----------- |
+| `src/contracts/index.ts`   | Re-export suite contracts + local schemas       | Required    |
+| `src/jobforge/index.ts`    | Use suite jobforge-client                       | Required    |
+| `src/profiles/index.ts`    | Extend suite profiles                           | Required    |
+| `src/cli.ts`               | Commander CLI with --tenant and --project flags | Required    |
+| `src/index.ts`             | Public API exports                              | Required    |
+| `tests/*.test.ts`          | Vitest tests with coverage                      | Required    |
+| `.github/workflows/ci.yml` | Automated validation                            | Required    |
+| `README.md`                | Standard format                                 | Required    |
+| `CONTRIBUTING.md`          | Contribution guidelines                         | Required    |
+| `LICENSE`                  | MIT license                                     | Required    |
+| `CHANGELOG.md`             | Auto-generated                                  | Auto        |
+| `SECURITY.md`              | Security policy                                 | Required    |
 
 ### 5. Code Quality Standards
 
 **TypeScript**:
+
 - Strict mode enabled
 - Explicit return types on exported functions
 - No `any` types
 - No unused variables
 
 **Linting**:
+
 - @typescript-eslint/recommended
 - Explicit function return types required
 - No explicit any
 
 **Testing**:
+
 - Vitest for all tests
 - Coverage threshold: 80% minimum
 - Tests for contracts, jobforge integration, and domain logic
 
 **Runnerless Enforcement**:
+
 - No `bullmq`, `bull`, `bee-queue`, or similar job queue libraries
 - No `node-cron`, `cron`, or similar schedulers
 - No `express`, `fastify`, `koa`, or similar server frameworks (except CLI-only)
@@ -288,14 +304,18 @@ jobs:
 - All "action" outputs must be JobForge request payloads
 
 ### 6. Multi-Tenancy Requirement
+
 Every module must:
+
 - Accept `--tenant <id>` CLI flag
 - Accept `--project <id>` CLI flag
 - Include `tenant_context` in all output schemas
 - Validate tenant_id + project_id are non-empty strings
 
 ### 7. Documentation Standards
+
 Each repo must include:
+
 1. **README.md** with:
    - Purpose statement
    - Key principles (no auto-publish, no runners, multi-tenant)
@@ -321,7 +341,9 @@ Each repo must include:
 ## D) Identified Drift & Recommendations
 
 ### For growth-autopilot (Reference)
+
 **Issues Found**:
+
 1. ⚠️ `.github/workflows/` directory is empty - needs CI/CD
 2. ⚠️ Missing `runnerless:audit` script in package.json
 3. ⚠️ No SECURITY.md file
@@ -330,17 +352,21 @@ Each repo must include:
 **Action**: Apply Stage 2 harmonization
 
 ### For ops-autopilot, support-autopilot, finops-autopilot
+
 **Status**: Repositories not present locally. Assumptions:
+
 1. They may exist in a different location/organization
 2. They may need to be scaffolded following growth-autopilot patterns
 3. They should adopt the normalized conventions above
 
 **Required Structure** (per module):
+
 - `ops-autopilot`: Infrastructure observation, cost analysis, incident correlation
 - `support-autopilot`: Ticket analysis, KB generation, response drafting
 - `finops-autopilot`: Cost anomaly detection, budget recommendations, usage optimization
 
 Each should follow the exact same structure as growth-autopilot but with domain-specific:
+
 - `/src/{domain}/` implementations
 - Domain-specific contracts extending base schemas
 - CLI commands matching domain operations
@@ -369,6 +395,7 @@ Each should follow the exact same structure as growth-autopilot but with domain-
 ## F) Rollback Plan
 
 If harmonization causes issues:
+
 1. **Version Pinning**: Each module has independent versioning
 2. **Git History**: All changes committed incrementally
 3. **Suite Packages Optional**: Modules can fall back to local implementations
@@ -392,4 +419,4 @@ If harmonization causes issues:
 
 ---
 
-*Report generated by Kimi. For questions, refer to autopilot-suite documentation (Stage 1 output).*
+_Report generated by Kimi. For questions, refer to autopilot-suite documentation (Stage 1 output)._

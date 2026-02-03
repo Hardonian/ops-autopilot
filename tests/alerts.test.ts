@@ -117,7 +117,7 @@ describe('Alert Correlation', () => {
   describe('correlateAlerts', () => {
     it('should correlate alerts by service', () => {
       const result = correlateAlerts(mockAlerts.slice(0, 3)); // First 3 alerts
-      
+
       expect(result.groups.length).toBeGreaterThan(0);
       expect(result.stats.total_alerts).toBe(3);
     });
@@ -158,7 +158,7 @@ describe('Alert Correlation', () => {
 
     it('should create correlation groups with root cause analysis', () => {
       const result = correlateAlerts(mockAlerts.slice(0, 3));
-      
+
       if (result.groups.length > 0) {
         const group = result.groups[0];
         expect(group.root_cause_analysis).toBeDefined();
@@ -203,7 +203,7 @@ describe('Alert Correlation', () => {
   describe('calculateAlertMetrics', () => {
     it('should calculate correct metrics', () => {
       const metrics = calculateAlertMetrics(mockAlerts);
-      
+
       expect(metrics.total).toBe(4);
       expect(metrics.by_severity.critical).toBe(1);
       expect(metrics.by_severity.warning).toBe(3);
@@ -215,7 +215,7 @@ describe('Alert Correlation', () => {
   describe('defaultCorrelationRules', () => {
     it('should have valid rules', () => {
       expect(defaultCorrelationRules.length).toBeGreaterThan(0);
-      
+
       for (const rule of defaultCorrelationRules) {
         expect(rule.rule_id).toBeTruthy();
         expect(rule.name).toBeTruthy();

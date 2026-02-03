@@ -12,6 +12,7 @@ Ops Autopilot is part of the `@autopilot/*` suite. It provides:
 - **JobForge Integration**: Outputs job requests for ops tasks (alert correlation, runbook generation, reliability reports)
 
 **Key Principle**: All job requests enforce runnerless constraints:
+
 - `auto_execute: false` - No local execution
 - `require_approval: true` - Human approval required
 - `require_policy_token: true` - Policy enforcement
@@ -72,13 +73,13 @@ ops-autopilot report \
 
 ### CLI Command Table
 
-| Command | Purpose | Example |
-| --- | --- | --- |
-| `ingest` | Ingest alerts/events/log summaries | `ops-autopilot ingest --tenant t --project p --file ./alerts.json` |
-| `correlate` | Correlate alerts into groups | `ops-autopilot correlate --tenant t --project p --file ./alerts.json --jobs` |
-| `runbook` | Generate runbook from alert group | `ops-autopilot runbook --tenant t --project p --file ./alert-group.json --jobs` |
-| `report` | Generate reliability report | `ops-autopilot report --tenant t --project p --type health_check --start 2026-01-01T00:00:00Z --end 2026-01-31T23:59:59Z --jobs` |
-| `analyze` | JobForge integration surface (bundle + report) | `ops-autopilot analyze --inputs ./fixtures/jobforge/input.json --tenant t --project p --trace trace --out ./out` |
+| Command     | Purpose                                        | Example                                                                                                                          |
+| ----------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `ingest`    | Ingest alerts/events/log summaries             | `ops-autopilot ingest --tenant t --project p --file ./alerts.json`                                                               |
+| `correlate` | Correlate alerts into groups                   | `ops-autopilot correlate --tenant t --project p --file ./alerts.json --jobs`                                                     |
+| `runbook`   | Generate runbook from alert group              | `ops-autopilot runbook --tenant t --project p --file ./alert-group.json --jobs`                                                  |
+| `report`    | Generate reliability report                    | `ops-autopilot report --tenant t --project p --type health_check --start 2026-01-01T00:00:00Z --end 2026-01-31T23:59:59Z --jobs` |
+| `analyze`   | JobForge integration surface (bundle + report) | `ops-autopilot analyze --inputs ./fixtures/jobforge/input.json --tenant t --project p --trace trace --out ./out`                 |
 
 ## JobForge Integration
 
@@ -99,6 +100,7 @@ ops-autopilot analyze \
   --trace trace-123 \
   --out ./out
 ```
+
 See [docs/jobforge-integration.md](./docs/jobforge-integration.md) for bundle validation and ingestion guidance.
 
 ### Programmatic Usage
@@ -109,18 +111,18 @@ import {
   validateAlerts,
   type Alert,
   type CorrelatedAlertGroup,
-  
+
   // Alert correlation
   correlateAlerts,
   createAlertCorrelation,
-  
+
   // Runbook generation
   generateRunbook,
-  
+
   // JobForge requests
   createAlertCorrelationJobs,
   createRunbookJobs,
-  
+
   // Profiles
   getOpsProfile,
   analyze,
@@ -142,14 +144,14 @@ const correlation = createAlertCorrelation(
 // Generate runbook for first correlated group
 if (correlation.groups.length > 0) {
   const runbook = generateRunbook(correlation.groups[0]);
-  
+
   // Generate JobForge job requests
   const tenantContext = { tenant_id: 'acme-prod', project_id: 'api-platform' };
   const jobs = [
     ...createAlertCorrelationJobs(tenantContext, correlation),
     ...createRunbookJobs(tenantContext, runbook),
   ];
-  
+
   // Jobs are ready for submission to JobForge
   console.log(JSON.stringify(jobs, null, 2));
 }
@@ -211,7 +213,17 @@ const AlertSchema = z.object({
   alert_id: z.string(),
   tenant_id: TenantIdSchema,
   project_id: ProjectIdSchema,
-  source: z.enum(['cloudwatch', 'datadog', 'prometheus', 'grafana', 'pagerduty', 'opsgenie', 'newrelic', 'sentry', 'custom']),
+  source: z.enum([
+    'cloudwatch',
+    'datadog',
+    'prometheus',
+    'grafana',
+    'pagerduty',
+    'opsgenie',
+    'newrelic',
+    'sentry',
+    'custom',
+  ]),
   status: z.enum(['open', 'acknowledged', 'resolved', 'suppressed']),
   title: z.string(),
   description: z.string(),
@@ -296,24 +308,24 @@ const ReliabilityReportSchema = z.object({
 
 Ops Autopilot generates jobs for these types:
 
-| Job Type | Purpose | Payload |
-|----------|---------|---------|
-| `autopilot.ops.alert_correlate` | Correlate alerts across services | `{ alert_ids: string[], time_window_minutes?: number, profile_id: string }` |
-| `autopilot.ops.runbook_generate` | Generate incident response runbook | `{ alert_group_id: string, root_cause: string, affected_services: string[], severity: string, ... }` |
-| `autopilot.ops.reliability_report` | Generate reliability report | `{ report_type: string, period_start: string, period_end: string, include_anomalies: boolean, ... }` |
+| Job Type                           | Purpose                            | Payload                                                                                              |
+| ---------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `autopilot.ops.alert_correlate`    | Correlate alerts across services   | `{ alert_ids: string[], time_window_minutes?: number, profile_id: string }`                          |
+| `autopilot.ops.runbook_generate`   | Generate incident response runbook | `{ alert_group_id: string, root_cause: string, affected_services: string[], severity: string, ... }` |
+| `autopilot.ops.reliability_report` | Generate reliability report        | `{ report_type: string, period_start: string, period_end: string, include_anomalies: boolean, ... }` |
 
 ## Profiles
 
 Ops Autopilot provides pre-configured profiles:
 
-| Profile | Description | Use Case |
-|---------|-------------|----------|
-| `ops-base` | Default ops configuration | General infrastructure monitoring |
-| `ops-jobforge` | Optimized for JobForge | Stricter thresholds for critical infrastructure |
-| `ops-settler` | Optimized for Settler | Payment processing reliability |
-| `ops-readylayer` | Optimized for ReadyLayer | Feature flag infrastructure |
-| `ops-aias` | Optimized for AIAS | AI infrastructure monitoring |
-| `ops-keys` | Optimized for Keys | Key management infrastructure |
+| Profile          | Description               | Use Case                                        |
+| ---------------- | ------------------------- | ----------------------------------------------- |
+| `ops-base`       | Default ops configuration | General infrastructure monitoring               |
+| `ops-jobforge`   | Optimized for JobForge    | Stricter thresholds for critical infrastructure |
+| `ops-settler`    | Optimized for Settler     | Payment processing reliability                  |
+| `ops-readylayer` | Optimized for ReadyLayer  | Feature flag infrastructure                     |
+| `ops-aias`       | Optimized for AIAS        | AI infrastructure monitoring                    |
+| `ops-keys`       | Optimized for Keys        | Key management infrastructure                   |
 
 ```typescript
 // Use a profile

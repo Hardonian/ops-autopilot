@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { ISODateTimeSchema, IdentifierSchema, JSONValueSchema, SemVerSchema } from './core.js';
+import { ISODateTimeSchema, JSONValueSchema, SemVerSchema } from './core.js';
 import { TenantContextSchema } from './tenant.js';
 import { EvidenceSchema } from './evidence.js';
 
 /**
  * EventEnvelope - JobForge-compatible event schema
- * 
+ *
  * Events are the primary input to Autopilot modules. They represent
  * signals from external systems (Settler, AIAS, Keys, ReadyLayer)
  * that trigger observation and recommendation workflows.
@@ -18,25 +18,25 @@ export const EventTypeSchema = z.enum([
   'growth.funnel_updated',
   'growth.experiment_proposed',
   'growth.content_requested',
-  
+
   // Ops events
   'ops.metric_alert',
   'ops.incident_detected',
   'ops.health_check_failed',
   'ops.cost_anomaly',
-  
+
   // Support events
   'support.ticket_created',
   'support.ticket_updated',
   'support.kb_requested',
   'support.response_drafted',
-  
+
   // FinOps events
   'finops.usage_reported',
   'finops.budget_threshold',
   'finops.cost_anomaly',
   'finops.optimization_opportunity',
-  
+
   // Generic events
   'autopilot.trigger.manual',
   'autopilot.trigger.scheduled',
@@ -49,41 +49,41 @@ export type EventType = z.infer<typeof EventTypeSchema>;
 export const EventEnvelopeSchema = z.object({
   /** Event envelope version */
   version: SemVerSchema,
-  
+
   /** Unique event identifier */
   event_id: z.string().uuid(),
-  
+
   /** Event type classification */
   event_type: EventTypeSchema,
-  
+
   /** Tenant context for multi-tenancy */
   tenant_context: TenantContextSchema,
-  
+
   /** Timestamp when event occurred */
   timestamp: ISODateTimeSchema,
-  
+
   /** Event payload (type-specific data) */
   payload: z.record(z.string(), JSONValueSchema),
-  
+
   /** Evidence links for traceability */
   evidence: z.array(EvidenceSchema).optional(),
-  
+
   /** Source system that generated the event */
   source: z.object({
     system: z.string(),
     version: z.string().optional(),
     instance_id: z.string().optional(),
   }),
-  
+
   /** Correlation ID for tracing request chains */
   correlation_id: z.string().optional(),
-  
+
   /** Event priority */
   priority: z.enum(['low', 'normal', 'high', 'critical']).default('normal'),
-  
+
   /** Whether event has been processed */
   processed: z.boolean().default(false),
-  
+
   /** Processing metadata */
   processed_at: ISODateTimeSchema.optional(),
   processed_by: z.string().optional(),
@@ -110,7 +110,7 @@ export function createEventEnvelope(
   }
 ): EventEnvelope {
   const now = new Date().toISOString();
-  
+
   return EventEnvelopeSchema.parse({
     version: '1.0.0',
     event_id: crypto.randomUUID(),
@@ -132,10 +132,7 @@ export function createEventEnvelope(
  * @param processor - Identifier of processor
  * @returns Updated envelope
  */
-export function markEventProcessed(
-  envelope: EventEnvelope,
-  processor: string
-): EventEnvelope {
+export function markEventProcessed(envelope: EventEnvelope, processor: string): EventEnvelope {
   return {
     ...envelope,
     processed: true,

@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  RunbookSchema,
-  type CorrelatedAlertGroup,
-  type Alert,
-} from '../src/contracts/index.js';
+import { RunbookSchema, type CorrelatedAlertGroup, type Alert } from '../src/contracts/index.js';
 import {
   generateRunbook,
   validateRunbook,
@@ -113,7 +109,7 @@ describe('Runbook Generation', () => {
   describe('generateRunbook', () => {
     it('should generate a valid runbook', () => {
       const runbook = generateRunbook(mockAlertGroup);
-      
+
       expect(runbook.runbook_id).toBeTruthy();
       expect(runbook.name).toBeTruthy();
       expect(runbook.description).toBeTruthy();
@@ -124,7 +120,7 @@ describe('Runbook Generation', () => {
 
     it('should generate runbook for resource exhaustion pattern', () => {
       const runbook = generateRunbook(mockAlertGroup);
-      
+
       expect(runbook.name).toContain('Resource');
       expect(runbook.severity).toBe('warning');
       expect(runbook.estimated_duration_minutes).toBeGreaterThan(0);
@@ -132,14 +128,18 @@ describe('Runbook Generation', () => {
 
     it('should generate runbook for cascade failure pattern', () => {
       const runbook = generateRunbook(mockCascadeAlertGroup);
-      
+
       expect(runbook.name).toContain('Cascade');
       expect(runbook.severity).toBe('critical');
     });
 
     it('should respect includeAutomation option', () => {
-      const runbookWithAuto = generateRunbook(mockAlertGroup, undefined, { includeAutomation: true });
-      const runbookWithoutAuto = generateRunbook(mockAlertGroup, undefined, { includeAutomation: false });
+      const runbookWithAuto = generateRunbook(mockAlertGroup, undefined, {
+        includeAutomation: true,
+      });
+      const runbookWithoutAuto = generateRunbook(mockAlertGroup, undefined, {
+        includeAutomation: false,
+      });
 
       const autoStepsWith = getAutomatedSteps(runbookWithAuto);
       const autoStepsWithout = getAutomatedSteps(runbookWithoutAuto);
@@ -149,7 +149,7 @@ describe('Runbook Generation', () => {
 
     it('should number steps sequentially', () => {
       const runbook = generateRunbook(mockAlertGroup);
-      
+
       for (let i = 0; i < runbook.steps.length; i++) {
         expect(runbook.steps[i].step_number).toBe(i + 1);
       }
@@ -160,7 +160,7 @@ describe('Runbook Generation', () => {
     it('should validate valid runbook', () => {
       const runbook = generateRunbook(mockAlertGroup);
       const validated = validateRunbook(runbook);
-      
+
       expect(validated.runbook_id).toBe(runbook.runbook_id);
     });
 
@@ -174,7 +174,7 @@ describe('Runbook Generation', () => {
     it('should return automated steps', () => {
       const runbook = generateRunbook(mockAlertGroup, undefined, { includeAutomation: true });
       const automated = getAutomatedSteps(runbook);
-      
+
       expect(automated.every(s => s.automated)).toBe(true);
     });
   });
@@ -183,7 +183,7 @@ describe('Runbook Generation', () => {
     it('should return manual steps', () => {
       const runbook = generateRunbook(mockAlertGroup);
       const manual = getManualSteps(runbook);
-      
+
       expect(manual.every(s => !s.automated)).toBe(true);
     });
   });
@@ -192,7 +192,7 @@ describe('Runbook Generation', () => {
     it('should return steps requiring approval', () => {
       const runbook = generateRunbook(mockAlertGroup);
       const approvalSteps = getStepsRequiringApproval(runbook);
-      
+
       expect(approvalSteps.every(s => s.requires_approval)).toBe(true);
       expect(approvalSteps.length).toBeGreaterThan(0);
     });
@@ -202,7 +202,7 @@ describe('Runbook Generation', () => {
     it('should calculate correct progress', () => {
       const runbook = generateRunbook(mockAlertGroup);
       const progress = calculateRunbookProgress(runbook, [1, 2]);
-      
+
       expect(progress.percent).toBeGreaterThan(0);
       expect(progress.remaining).toBe(runbook.steps.length - 2);
     });
@@ -210,7 +210,7 @@ describe('Runbook Generation', () => {
     it('should return 0% for no completed steps', () => {
       const runbook = generateRunbook(mockAlertGroup);
       const progress = calculateRunbookProgress(runbook, []);
-      
+
       expect(progress.percent).toBe(0);
       expect(progress.remaining).toBe(runbook.steps.length);
     });
@@ -219,7 +219,7 @@ describe('Runbook Generation', () => {
       const runbook = generateRunbook(mockAlertGroup);
       const allSteps = runbook.steps.map(s => s.step_number);
       const progress = calculateRunbookProgress(runbook, allSteps);
-      
+
       expect(progress.percent).toBe(100);
       expect(progress.remaining).toBe(0);
     });

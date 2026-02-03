@@ -1,10 +1,16 @@
 import { createHash } from 'crypto';
 
-export type CanonicalJsonValue = string | number | boolean | null | CanonicalJsonValue[] | { [key: string]: CanonicalJsonValue };
+export type CanonicalJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | CanonicalJsonValue[]
+  | { [key: string]: CanonicalJsonValue };
 
 export function canonicalizeValue(value: unknown): CanonicalJsonValue | undefined {
   if (Array.isArray(value)) {
-    return value.map((item) => canonicalizeValue(item) ?? null);
+    return value.map(item => canonicalizeValue(item) ?? null);
   }
 
   if (value && typeof value === 'object') {
@@ -26,7 +32,12 @@ export function canonicalizeValue(value: unknown): CanonicalJsonValue | undefine
     return undefined;
   }
 
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) {
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    value === null
+  ) {
     return value;
   }
 

@@ -1,15 +1,15 @@
 import { z } from 'zod';
-import { ISODateTimeSchema, IdentifierSchema, JSONValueSchema, SemVerSchema, SeveritySchema } from './core.js';
+import { ISODateTimeSchema, JSONValueSchema, SemVerSchema, SeveritySchema } from './core.js';
 import { TenantContextSchema } from './tenant.js';
-import { EvidenceSchema } from './evidence.js';
+import { EvidenceSchema, type Evidence } from './evidence.js';
 import { JobRequestSchema } from './job.js';
 
 /**
  * ReportEnvelope - Module output schema
- * 
+ *
  * Reports are the primary output of Autopilot modules. They contain
  * findings, recommendations, and optionally job requests for actions.
- * 
+ *
  * All reports are:
  * - Multi-tenant safe
  * - Evidence-linked
@@ -24,19 +24,19 @@ export const ReportTypeSchema = z.enum([
   'growth.funnel_analysis',
   'growth.experiment_proposals',
   'growth.content_drafts',
-  
+
   // Ops reports
   'ops.health_assessment',
   'ops.incident_report',
   'ops.metric_summary',
   'ops.cost_analysis',
-  
+
   // Support reports
   'support.ticket_summary',
   'support.response_suggestions',
   'support.kb_drafts',
   'support.sentiment_report',
-  
+
   // FinOps reports
   'finops.usage_report',
   'finops.budget_status',
@@ -48,10 +48,10 @@ export type ReportType = z.infer<typeof ReportTypeSchema>;
 
 /** Recommendation action type */
 export const RecommendationActionSchema = z.enum([
-  'observe',      // Just record, no action
-  'draft',        // Create draft content/config
-  'recommend',    // Suggest action to user
-  'request_job',  // Generate JobForge request
+  'observe', // Just record, no action
+  'draft', // Create draft content/config
+  'recommend', // Suggest action to user
+  'request_job', // Generate JobForge request
 ]);
 
 export type RecommendationAction = z.infer<typeof RecommendationActionSchema>;
@@ -60,31 +60,31 @@ export type RecommendationAction = z.infer<typeof RecommendationActionSchema>;
 export const RecommendationSchema = z.object({
   /** Unique recommendation ID */
   id: z.string().min(1),
-  
+
   /** Recommendation title */
   title: z.string().min(1),
-  
+
   /** Detailed description */
   description: z.string(),
-  
+
   /** Action type */
   action: RecommendationActionSchema,
-  
+
   /** Severity/importance */
   severity: SeveritySchema,
-  
+
   /** Evidence supporting this recommendation */
   evidence: z.array(EvidenceSchema),
-  
+
   /** Associated job request (if action is 'request_job') */
   job_request: JobRequestSchema.optional(),
-  
+
   /** Metadata */
   metadata: z.record(z.string(), JSONValueSchema).optional(),
-  
+
   /** Whether this recommendation requires human review */
   requires_review: z.boolean().default(true),
-  
+
   /** Suggested reviewer roles */
   reviewer_roles: z.array(z.string()).optional(),
 });
@@ -95,22 +95,22 @@ export type Recommendation = z.infer<typeof RecommendationSchema>;
 export const ReportSummarySchema = z.object({
   /** Total findings count */
   total_findings: z.number().int().nonnegative(),
-  
+
   /** Count by severity */
   by_severity: z.record(
     z.enum(['info', 'opportunity', 'warning', 'critical']),
     z.number().int().nonnegative()
   ),
-  
+
   /** Total recommendations */
   total_recommendations: z.number().int().nonnegative(),
-  
+
   /** Recommendations requiring action */
   actionable_count: z.number().int().nonnegative(),
-  
+
   /** Processing statistics */
   processing_time_ms: z.number().int().nonnegative().optional(),
-  
+
   /** Coverage percentage (if applicable) */
   coverage_percent: z.number().min(0).max(100).optional(),
 });
@@ -121,61 +121,69 @@ export type ReportSummary = z.infer<typeof ReportSummarySchema>;
 export const ReportEnvelopeSchema = z.object({
   /** Report version */
   version: SemVerSchema,
-  
+
   /** Unique report identifier */
   report_id: z.string().uuid(),
-  
+
   /** Report type */
   report_type: ReportTypeSchema,
-  
+
   /** Tenant context */
   tenant_context: TenantContextSchema,
-  
+
   /** Module that generated this report */
   module: z.object({
     name: z.string(),
     version: z.string(),
   }),
-  
+
   /** Timestamps */
   generated_at: ISODateTimeSchema,
-  
+
   /** Time range covered by report (if applicable) */
-  time_range: z.object({
-    start: ISODateTimeSchema,
-    end: ISODateTimeSchema,
-  }).optional(),
-  
+  time_range: z
+    .object({
+      start: ISODateTimeSchema,
+      end: ISODateTimeSchema,
+    })
+    .optional(),
+
   /** Report summary */
   summary: ReportSummarySchema,
-  
+
   /** All evidence collected */
   evidence: z.array(EvidenceSchema),
-  
+
   /** Recommendations */
   recommendations: z.array(RecommendationSchema),
-  
+
   /** Job requests generated (for action recommendations) */
   job_requests: z.array(JobRequestSchema).default([]),
-  
+
   /** Raw findings data */
   findings: z.record(z.string(), JSONValueSchema).default({}),
-  
+
   /** Processing metadata */
-  metadata: z.object({
-    input_size_bytes: z.number().int().nonnegative().optional(),
-    output_size_bytes: z.number().int().nonnegative().optional(),
-    correlation_id: z.string().optional(),
-    source_event_id: z.string().optional(),
-    profile_id: z.string().optional(),
-  }).default({}),
-  
+  metadata: z
+    .object({
+      input_size_bytes: z.number().int().nonnegative().optional(),
+      output_size_bytes: z.number().int().nonnegative().optional(),
+      correlation_id: z.string().optional(),
+      source_event_id: z.string().optional(),
+      profile_id: z.string().optional(),
+    })
+    .default({}),
+
   /** Redaction hints (for sensitive data) */
-  redaction_hints: z.array(z.object({
-    field: z.string(),
-    reason: z.string(),
-    severity: z.enum(['low', 'medium', 'high']),
-  })).default([]),
+  redaction_hints: z
+    .array(
+      z.object({
+        field: z.string(),
+        reason: z.string(),
+        severity: z.enum(['low', 'medium', 'high']),
+      })
+    )
+    .default([]),
 });
 
 export type ReportEnvelope = z.infer<typeof ReportEnvelopeSchema>;
@@ -233,7 +241,7 @@ export function addRecommendation(
     ...recommendation,
     id: recommendation.id ?? `rec-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
   };
-  
+
   const updated = {
     ...envelope,
     recommendations: [...envelope.recommendations, rec],
@@ -243,10 +251,10 @@ export function addRecommendation(
       actionable_count: envelope.summary.actionable_count + (rec.action !== 'observe' ? 1 : 0),
     },
   };
-  
+
   // Update severity counts
-  updated.summary.by_severity[rec.severity]++;
-  
+  updated.summary.by_severity[rec.severity] = (updated.summary.by_severity[rec.severity] ?? 0) + 1;
+
   return updated;
 }
 
@@ -256,10 +264,7 @@ export function addRecommendation(
  * @param evidence - Evidence to add
  * @returns Updated envelope
  */
-export function addEvidence(
-  envelope: ReportEnvelope,
-  evidence: Evidence
-): ReportEnvelope {
+export function addEvidence(envelope: ReportEnvelope, evidence: Evidence): ReportEnvelope {
   return {
     ...envelope,
     evidence: [...envelope.evidence, evidence],
@@ -268,7 +273,7 @@ export function addEvidence(
       total_findings: envelope.summary.total_findings + 1,
       by_severity: {
         ...envelope.summary.by_severity,
-        [evidence.severity]: envelope.summary.by_severity[evidence.severity] + 1,
+        [evidence.severity]: (envelope.summary.by_severity[evidence.severity] ?? 0) + 1,
       },
     },
   };

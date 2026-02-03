@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { ISODateTimeSchema, JSONValueSchema, SeveritySchema } from './core.js';
+import { ISODateTimeSchema, JSONValueSchema, SeveritySchema, type Severity } from './core.js';
 
 /**
  * Evidence schemas for traceability
- * 
+ *
  * Every recommendation, finding, or job request must link back to
  * the evidence (signal) that caused it. This enables audit trails
  * and explains the "why" behind every output.
@@ -26,25 +26,25 @@ export type EvidenceType = z.infer<typeof EvidenceTypeSchema>;
 export const EvidenceSchema = z.object({
   /** Unique identifier for this evidence */
   id: z.string().min(1),
-  
+
   /** Type of evidence */
   type: EvidenceTypeSchema,
-  
+
   /** Human-readable description of the evidence */
   description: z.string().min(1),
-  
+
   /** Location/path where evidence was found (e.g., file path, URL) */
   location: z.string().optional(),
-  
+
   /** Severity classification */
   severity: SeveritySchema,
-  
+
   /** Raw value or snapshot of the evidence */
   raw_value: JSONValueSchema.optional(),
-  
+
   /** Timestamp when evidence was collected */
   collected_at: ISODateTimeSchema.optional(),
-  
+
   /** Source system or module that produced this evidence */
   source: z.string().optional(),
 });
@@ -77,6 +77,7 @@ export function createEvidence(
     type: 'signal',
     description,
     severity,
+    source: signal,
     collected_at: new Date().toISOString(),
   });
 }
@@ -89,13 +90,13 @@ export function createEvidence(
 export function aggregateSeverity(evidence: Evidence[]): Severity {
   const severityOrder = ['info', 'opportunity', 'warning', 'critical'] as const;
   let maxIndex = 0;
-  
+
   for (const item of evidence) {
     const index = severityOrder.indexOf(item.severity);
     if (index > maxIndex) {
       maxIndex = index;
     }
   }
-  
+
   return severityOrder[maxIndex];
 }

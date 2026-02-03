@@ -118,7 +118,7 @@ export function createAlertCorrelationJobs(
           'autopilot.ops.alert_correlate',
           {
             correlation_group_id: group.group_id,
-            alert_ids: group.alerts.map((a) => a.alert_id),
+            alert_ids: group.alerts.map(a => a.alert_id),
             root_cause: group.root_cause_analysis.probable_cause,
             confidence: group.root_cause_analysis.confidence,
             services_affected: group.blast_radius.services_affected,
@@ -175,7 +175,7 @@ export function createRunbookJobs(
   options?: RunnerlessRequestOptions
 ): JobRequest[] {
   const jobs: JobRequest[] = [];
-  const automatedSteps = runbook.steps.filter((step) => step.automated);
+  const automatedSteps = runbook.steps.filter(step => step.automated);
 
   if (automatedSteps.length > 0) {
     jobs.push(
@@ -185,8 +185,8 @@ export function createRunbookJobs(
         {
           runbook_id: runbook.runbook_id,
           action: 'execute_automated_steps',
-          automated_step_numbers: automatedSteps.map((s) => s.step_number),
-          requires_approval_before_each: automatedSteps.some((s) => s.requires_approval),
+          automated_step_numbers: automatedSteps.map(s => s.step_number),
+          requires_approval_before_each: automatedSteps.some(s => s.requires_approval),
           estimated_duration_minutes: runbook.estimated_duration_minutes,
           profile_id: 'base',
         },
@@ -207,7 +207,7 @@ export function createRunbookJobs(
           runbook_id: runbook.runbook_id,
           action: 'notify_oncall',
           severity: runbook.severity,
-          steps_require_manual: runbook.steps.filter((s) => !s.automated).length,
+          steps_require_manual: runbook.steps.filter(s => !s.automated).length,
           profile_id: 'base',
         },
         {
@@ -259,9 +259,7 @@ export function createReliabilityReportJobs(
 ): JobRequest[] {
   const jobs: JobRequest[] = [];
 
-  const criticalRecommendations = report.recommendations.filter(
-    (r) => r.priority === 'critical'
-  );
+  const criticalRecommendations = report.recommendations.filter(r => r.priority === 'critical');
 
   for (const rec of criticalRecommendations) {
     jobs.push(
@@ -287,9 +285,7 @@ export function createReliabilityReportJobs(
     );
   }
 
-  const criticalAnomalies = report.anomalies.filter(
-    (a) => a.severity === 'critical'
-  );
+  const criticalAnomalies = report.anomalies.filter(a => a.severity === 'critical');
 
   for (const anomaly of criticalAnomalies) {
     jobs.push(
@@ -363,7 +359,7 @@ export function groupJobsByType(requests: JobRequest[]): Record<string, JobReque
 }
 
 export function serializeJobsAsJsonLines(requests: JobRequest[]): string {
-  return requests.map((request) => JSON.stringify(request)).join('\n');
+  return requests.map(request => JSON.stringify(request)).join('\n');
 }
 
 // ============================================================================
@@ -378,7 +374,4 @@ export function validateJobBatch(batch: unknown): ReturnType<typeof validateBatc
   return validateBatch(batch);
 }
 
-export {
-  serializeJobRequest,
-  serializeJobBatch,
-};
+export { serializeJobRequest, serializeJobBatch };

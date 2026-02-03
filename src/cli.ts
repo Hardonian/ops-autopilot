@@ -47,7 +47,7 @@ import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'fs';
 
 /**
  * Ops Autopilot CLI
- * 
+ *
  * Commands:
  * - ingest: Ingest alerts/events from various sources
  * - correlate: Correlate alerts to identify patterns
@@ -59,7 +59,9 @@ const program = new Command();
 
 program
   .name('ops-autopilot')
-  .description('Runnerless reliability autopilot - detects infrastructure anomalies and produces JobForge requests')
+  .description(
+    'Runnerless reliability autopilot - detects infrastructure anomalies and produces JobForge requests'
+  )
   .version('0.1.0');
 
 // ============================================================================
@@ -75,7 +77,7 @@ program
   .requiredOption('--trace <trace>', 'Trace ID')
   .requiredOption('--out <dir>', 'Output directory')
   .option('--stable-output', 'Write deterministic outputs for fixtures/docs', false)
-  .action(async (options) => {
+  .action(async options => {
     try {
       if (!existsSync(options.inputs)) {
         throw new Error(`Inputs file not found: ${options.inputs}`);
@@ -107,7 +109,9 @@ program
     } catch (error) {
       if (error instanceof z.ZodError) {
         console.error('❌ Analyze failed: validation error');
-        console.error(error.errors.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n'));
+        console.error(
+          error.errors.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('\n')
+        );
         process.exit(2);
       }
 
@@ -138,18 +142,18 @@ program
   .option('--start <iso>', 'Time range start (ISO 8601)')
   .option('--end <iso>', 'Time range end (ISO 8601)')
   .option('--output <path>', 'Output file path')
-  .action(async (options) => {
+  .action(async options => {
     try {
       console.error('🔍 Ops Autopilot - Ingest Mode');
       console.error(`Tenant: ${options.tenant}, Project: ${options.project}`);
 
       let alerts: Alert[] = [];
-      
+
       // Load alerts from file if provided
       if (options.file && existsSync(options.file)) {
         const content = readFileSync(options.file, 'utf-8');
         const parsed = JSON.parse(content);
-        alerts = (Array.isArray(parsed) ? parsed : parsed.alerts ?? []) as Alert[];
+        alerts = (Array.isArray(parsed) ? parsed : (parsed.alerts ?? [])) as Alert[];
         console.error(`📥 Loaded ${alerts.length} alerts from ${options.file}`);
       }
 
@@ -170,10 +174,13 @@ program
         log_summary: options.logSummary,
         manifest_path: options.manifest,
         profile_id: options.profile,
-        time_range: options.start && options.end ? {
-          start: options.start,
-          end: options.end,
-        } : undefined,
+        time_range:
+          options.start && options.end
+            ? {
+                start: options.start,
+                end: options.end,
+              }
+            : undefined,
       };
 
       // Validate input
@@ -198,7 +205,7 @@ program
       };
 
       const output = JSON.stringify(result, null, 2);
-      
+
       if (options.output) {
         writeFileSync(options.output, output);
         console.error(`💾 Output written to ${options.output}`);
@@ -230,7 +237,7 @@ program
   .option('--sources <list>', 'Filter by sources (comma-separated)')
   .option('--output <path>', 'Output file path')
   .option('--jobs', 'Generate JobForge job requests', false)
-  .action(async (options) => {
+  .action(async options => {
     try {
       console.error('🔗 Ops Autopilot - Correlate Mode');
       console.error(`Tenant: ${options.tenant}, Project: ${options.project}`);
@@ -242,8 +249,8 @@ program
 
       const content = readFileSync(options.file, 'utf-8');
       const parsed = JSON.parse(content);
-      const rawAlerts = Array.isArray(parsed) ? parsed : parsed.alerts ?? [];
-      
+      const rawAlerts = Array.isArray(parsed) ? parsed : (parsed.alerts ?? []);
+
       console.error(`📥 Loaded ${rawAlerts.length} alerts`);
 
       // Validate alerts
@@ -258,9 +265,7 @@ program
         filter.sources = options.sources.split(',').map((s: string) => s.trim());
       }
 
-      const filteredAlerts = Object.keys(filter).length > 0 
-        ? filterAlerts(alerts, filter)
-        : alerts;
+      const filteredAlerts = Object.keys(filter).length > 0 ? filterAlerts(alerts, filter) : alerts;
 
       console.error(`🔍 ${filteredAlerts.length} alerts after filtering`);
 
@@ -312,7 +317,7 @@ program
       };
 
       const output = JSON.stringify(result, null, 2);
-      
+
       if (options.output) {
         writeFileSync(options.output, output);
         console.error(`💾 Output written to ${options.output}`);
@@ -342,7 +347,7 @@ program
   .option('--include-rollback', 'Include rollback procedures', true)
   .option('--output <path>', 'Output file path')
   .option('--jobs', 'Generate JobForge job requests', false)
-  .action(async (options) => {
+  .action(async options => {
     try {
       console.error('📖 Ops Autopilot - Runbook Generation');
       console.error(`Tenant: ${options.tenant}, Project: ${options.project}`);
@@ -373,12 +378,17 @@ program
         includeAutomation: options.includeAutomation,
         includeRollback: options.includeRollback,
       }) as unknown as Runbook;
-      const runbookSteps = runbook.steps as Array<{ automated: boolean; requires_approval: boolean }>;
+      const runbookSteps = runbook.steps as Array<{
+        automated: boolean;
+        requires_approval: boolean;
+      }>;
 
       console.error(`📘 Generated runbook: ${runbook.name}`);
       console.error(`   - ${runbookSteps.length} steps`);
-      console.error(`   - ${runbookSteps.filter((s) => s.automated).length} automated steps`);
-      console.error(`   - ${runbookSteps.filter((s) => s.requires_approval).length} steps require approval`);
+      console.error(`   - ${runbookSteps.filter(s => s.automated).length} automated steps`);
+      console.error(
+        `   - ${runbookSteps.filter(s => s.requires_approval).length} steps require approval`
+      );
       console.error(`   - Estimated duration: ${runbook.estimated_duration_minutes} minutes`);
 
       // Generate job requests if requested
@@ -396,7 +406,7 @@ program
       };
 
       const output = JSON.stringify(result, null, 2);
-      
+
       if (options.output) {
         writeFileSync(options.output, output);
         console.error(`💾 Output written to ${options.output}`);
@@ -406,7 +416,10 @@ program
 
       console.error('✅ Runbook generation complete');
     } catch (error) {
-      console.error('❌ Runbook generation failed:', error instanceof Error ? error.message : error);
+      console.error(
+        '❌ Runbook generation failed:',
+        error instanceof Error ? error.message : error
+      );
       process.exit(1);
     }
   });
@@ -420,7 +433,11 @@ program
   .description('Generate reliability report')
   .requiredOption('-t, --tenant <tenant>', 'Tenant ID')
   .requiredOption('-p, --project <project>', 'Project ID')
-  .option('--type <type>', 'Report type (incident_postmortem, health_check, trend_analysis, compliance)', 'health_check')
+  .option(
+    '--type <type>',
+    'Report type (incident_postmortem, health_check, trend_analysis, compliance)',
+    'health_check'
+  )
   .requiredOption('--start <iso>', 'Period start (ISO 8601)')
   .requiredOption('--end <iso>', 'Period end (ISO 8601)')
   .option('--profile <profile>', 'Profile ID', 'ops-base')
@@ -428,13 +445,13 @@ program
   .option('--alerts-file <file>', 'Path to alerts file for analysis')
   .option('--output <path>', 'Output file path')
   .option('--jobs', 'Generate JobForge job requests', false)
-  .action(async (options) => {
+  .action(async options => {
     try {
       console.error('📊 Ops Autopilot - Reliability Report');
       console.error(`Tenant: ${options.tenant}, Project: ${options.project}`);
 
       // Parse services
-      const services = options.services 
+      const services = options.services
         ? options.services.split(',').map((s: string) => s.trim())
         : undefined;
 
@@ -443,7 +460,7 @@ program
       if (options.alertsFile && existsSync(options.alertsFile)) {
         const content = readFileSync(options.alertsFile, 'utf-8');
         const parsed = JSON.parse(content);
-        alerts = Array.isArray(parsed) ? parsed : parsed.alerts ?? [];
+        alerts = Array.isArray(parsed) ? parsed : (parsed.alerts ?? []);
         console.error(`📥 Loaded ${alerts.length} alerts for analysis`);
       }
 
@@ -493,7 +510,7 @@ program
       };
 
       const output = JSON.stringify(result, null, 2);
-      
+
       if (options.output) {
         writeFileSync(options.output, output);
         console.error(`💾 Output written to ${options.output}`);
