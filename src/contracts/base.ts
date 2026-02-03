@@ -260,20 +260,14 @@ export const HealthAuditCapabilityMetadata: CapabilityMetadata = {
     retry_policy: {
       max_attempts: 3,
       backoff_strategy: 'exponential',
-      initial_delay_ms: 100,  // Tighter initial delay for faster recovery
-      max_delay_ms: 5000,     // Reduced max delay to avoid thundering herd
+      initial_delay_ms: 100, // Tighter initial delay for faster recovery
+      max_delay_ms: 5000, // Reduced max delay to avoid thundering herd
       backoff_multiplier: 2,
     },
     timeout_budget_ms: 60000,
     circuit_breaker: {
       failure_threshold: 5,
       recovery_timeout_ms: 10000, // Reduced recovery time for faster healing
-    },
-  },
-    timeout_budget_ms: 30000, // Reduced timeout (was 60000)
-    circuit_breaker: {
-      failure_threshold: 5,
-      recovery_timeout_ms: 10000, // Reduced recovery time (was 30000)
     },
   },
   required_permissions: ['ops:read', 'metrics:read'],
