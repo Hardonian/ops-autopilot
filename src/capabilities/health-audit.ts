@@ -610,3 +610,11 @@ export function getCapabilityMetadata(): CapabilityMetadata {
 export function validateHealthAuditInput(input: unknown): HealthAuditInput {
   return HealthAuditInputSchema.parse(input);
 }
+
+/**
+ * Reset global circuit breaker state (for testing only)
+ * @internal
+ */
+export function _resetCircuitBreakerForTesting(): void {
+  globalCircuitBreaker.reset();
+}
