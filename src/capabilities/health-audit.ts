@@ -6,6 +6,7 @@
  * - Backoff retry policy
  * - Timeout budget
  * - Circuit breaker pattern
+ * - Optimized validation with caching
  */
 
 import { randomUUID } from 'crypto';
@@ -18,6 +19,40 @@ import {
   type CapabilityMetadata,
   generateId,
 } from '../contracts/index.js';
+
+// ============================================================================
+// Optimized Validation Cache
+// ============================================================================
+
+class ValidationCache<T> {
+  private cache = new Map<string, { result: T; expiresAt: number }>();
+  private readonly ttlMs: number;
+
+  constructor(ttlMinutes: number = 5) {
+    this.ttlMs = ttlMinutes * 60 * 1000;
+  }
+
+  get(key: string): T | undefined {
+    const entry = this.cache.get(key);
+    if (!entry) return undefined;
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
+      return undefined;
+    }
+    return entry.result;
+  }
+
+  set(key: string, result: T): void {
+    this.cache.set(key, { result, expiresAt: Date.now() + this.ttlMs });
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+}
+
+// Input validation cache with stable keys
+const inputValidationCache = new ValidationCache<HealthAuditInput>();
 
 // ============================================================================
 // Types
