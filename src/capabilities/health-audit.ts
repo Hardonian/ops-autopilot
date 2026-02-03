@@ -420,13 +420,8 @@ export async function executeHealthAudit(
     }
   }
 
-  // Initialize circuit breaker
-  const circuitBreaker = new CircuitBreaker(
-    HealthAuditCapabilityMetadata.execution_policy.circuit_breaker?.failure_threshold ?? 5,
-    HealthAuditCapabilityMetadata.execution_policy.circuit_breaker?.recovery_timeout_ms ?? 30000
-  );
-
-  if (!circuitBreaker.canExecute()) {
+  // Use global circuit breaker for cross-call state management
+  if (!globalCircuitBreaker.canExecute()) {
     return HealthAuditOutputSchema.parse({
       audit_id: generateId(),
       status: 'failure',
@@ -483,7 +478,7 @@ export async function executeHealthAudit(
   for (let attempt = 1; attempt <= retry_policy.max_attempts; attempt++) {
     // Check timeout budget
     if (Date.now() - startTime > timeout_budget_ms) {
-      circuitBreaker.recordFailure();
+      globalCircuitBreaker.recordFailure();
       return HealthAuditOutputSchema.parse({
         audit_id: generateId(),
         status: 'failure',
@@ -525,7 +520,7 @@ export async function executeHealthAudit(
 
     try {
       const output = await performAudit(validatedInput, deps, attempt, idempotencyKey);
-      circuitBreaker.recordSuccess();
+      globalCircuitBreaker.recordSuccess();
 
       // Store in idempotency store (unless skipped for testing)
       if (!options.skipIdempotency) {
@@ -535,7 +530,7 @@ export async function executeHealthAudit(
       return output;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      circuitBreaker.recordFailure();
+      globalCircuitBreaker.recordFailure();
 
       // If not the last attempt, wait and retry
       if (attempt < retry_policy.max_attempts) {
