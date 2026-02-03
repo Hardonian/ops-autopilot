@@ -347,8 +347,20 @@ export async function executeHealthAudit(
   input: unknown,
   options: ExecuteHealthAuditOptions = {}
 ): Promise<HealthAuditOutput> {
-  // Validate input
-  const validatedInput = HealthAuditInputSchema.parse(input);
+  // Validate input with caching for deterministic inputs
+  let validatedInput: HealthAuditInput;
+  const cacheKey = typeof input === 'object' && input !== null ? JSON.stringify(input) : undefined;
+  if (cacheKey) {
+    const cached = inputValidationCache.get(cacheKey);
+    if (cached) {
+      validatedInput = cached;
+    } else {
+      validatedInput = HealthAuditInputSchema.parse(input);
+      inputValidationCache.set(cacheKey, validatedInput);
+    }
+  } else {
+    validatedInput = HealthAuditInputSchema.parse(input);
+  }
 
   // Generate or use provided idempotency key
   const idempotencyKey = validatedInput.idempotency_key ?? randomUUID();
