@@ -77,7 +77,7 @@ describe('Alert Correlation', () => {
       metric: 'latency_p95',
       threshold: 500,
       current_value: 750,
-      timestamp: new Date(Date.now() - 600000).toISOString(), // 10 min ago (outside window)
+      timestamp: new Date(Date.now() - 660000).toISOString(), // 11 min ago (outside window)
     },
   ];
 
@@ -123,11 +123,37 @@ describe('Alert Correlation', () => {
     });
 
     it('should respect time window', () => {
-      const result = correlateAlerts(mockAlerts);
-      
-      // alert-4 is outside the time window, so shouldn't correlate
-      const ungroupedAlert = result.ungrouped.find(a => a.alert_id === 'alert-4');
-      expect(ungroupedAlert).toBeDefined();
+      const now = Date.now();
+      const alerts = [
+        {
+          ...mockAlerts[0],
+          alert_id: 'alert-window-1',
+          timestamp: new Date(now - 900000).toISOString(), // 15 min ago
+          service: 'checkout',
+        },
+        {
+          ...mockAlerts[1],
+          alert_id: 'alert-window-2',
+          timestamp: new Date(now - 60000).toISOString(), // 1 min ago
+          service: 'checkout',
+        },
+      ];
+
+      const rule = {
+        rule_id: 'time-window-test',
+        name: 'Time Window Test',
+        description: 'Ensure alerts outside window do not correlate',
+        enabled: true,
+        match_criteria: [{ field: 'service', operator: 'equals', value: '{{service}}' }],
+        time_window_minutes: 5,
+        correlation_logic: 'same_service',
+        min_alerts: 2,
+      };
+
+      const result = correlateAlerts(alerts, [rule]);
+
+      expect(result.groups).toHaveLength(0);
+      expect(result.ungrouped).toHaveLength(2);
     });
 
     it('should create correlation groups with root cause analysis', () => {

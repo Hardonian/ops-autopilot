@@ -1,17 +1,11 @@
 import {
   RunbookSchema,
-  RunbookStepSchema,
-  AlertSchema,
-  SeveritySchema,
-  AlertSourceSchema,
   type Runbook,
   type RunbookStep,
-  type Alert,
   type CorrelatedAlertGroup,
   type Severity,
   generateId,
 } from '../contracts/index.js';
-import type { Profile } from '../profiles/index.js';
 
 /**
  * Runbook Generation
@@ -357,7 +351,6 @@ const runbookTemplates: RunbookTemplate[] = [
 
 export function generateRunbook(
   alertGroup: CorrelatedAlertGroup,
-  profile?: Profile,
   options?: {
     includeAutomation?: boolean;
     includeRollback?: boolean;
@@ -368,7 +361,7 @@ export function generateRunbook(
   const template = runbookTemplates.find(t => t.applicableTo(alertGroup));
   
   if (!template) {
-    return generateGenericRunbook(alertGroup, profile, options);
+    return generateGenericRunbook(alertGroup, options);
   }
   
   const steps = template.generateSteps(alertGroup);
@@ -423,7 +416,6 @@ export function generateRunbook(
 
 function generateGenericRunbook(
   alertGroup: CorrelatedAlertGroup,
-  profile?: Profile,
   options?: {
     includeAutomation?: boolean;
     includeRollback?: boolean;

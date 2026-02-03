@@ -27,6 +27,9 @@ export const JobTypeSchema = z.enum([
   'autopilot.ops.incident_correlate',
   'autopilot.ops.metric_aggregate',
   'autopilot.ops.cost_analyze',
+  'autopilot.ops.alert_correlate',
+  'autopilot.ops.runbook_generate',
+  'autopilot.ops.reliability_report',
   
   // Support jobs
   'autopilot.support.ticket_classify',

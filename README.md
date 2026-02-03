@@ -27,6 +27,15 @@ npm install @autopilot/ops-autopilot
 ### CLI Usage
 
 ```bash
+# JobForge-compatible analysis (bundle + report)
+ops-autopilot analyze \
+  --inputs ./fixtures/jobforge/input.json \
+  --tenant acme-prod \
+  --project api-platform \
+  --trace trace-123 \
+  --out ./out \
+  --stable-output
+
 # Ingest alerts from a file
 ops-autopilot ingest \
   --tenant acme-prod \
@@ -61,6 +70,36 @@ ops-autopilot report \
   --output ./report.json
 ```
 
+### CLI Command Table
+
+| Command | Purpose | Example |
+| --- | --- | --- |
+| `ingest` | Ingest alerts/events/log summaries | `ops-autopilot ingest --tenant t --project p --file ./alerts.json` |
+| `correlate` | Correlate alerts into groups | `ops-autopilot correlate --tenant t --project p --file ./alerts.json --jobs` |
+| `runbook` | Generate runbook from alert group | `ops-autopilot runbook --tenant t --project p --file ./alert-group.json --jobs` |
+| `report` | Generate reliability report | `ops-autopilot report --tenant t --project p --type health_check --start 2026-01-01T00:00:00Z --end 2026-01-31T23:59:59Z --jobs` |
+| `analyze` | JobForge integration surface (bundle + report) | `ops-autopilot analyze --inputs ./fixtures/jobforge/input.json --tenant t --project p --trace trace --out ./out` |
+
+## JobForge Integration
+
+Ops Autopilot provides a first-class JobForge integration surface that emits:
+
+- `request-bundle.json` (JobRequestBundle)
+- `report.json` (ReportEnvelopeBundle)
+- `report.md` (Markdown rendering)
+
+The module remains runnerless; it only generates requests and reports.
+
+```bash
+ops-autopilot analyze \
+  --inputs ./fixtures/jobforge/input.json \
+  --tenant acme-prod \
+  --project api-platform \
+  --trace trace-123 \
+  --out ./out
+```
+See [docs/jobforge-integration.md](./docs/jobforge-integration.md) for bundle validation and ingestion guidance.
+
 ### Programmatic Usage
 
 ```typescript
@@ -83,6 +122,8 @@ import {
   
   // Profiles
   getOpsProfile,
+  analyze,
+  renderReport,
 } from '@autopilot/ops-autopilot';
 
 // Load and validate alerts
@@ -111,6 +152,25 @@ if (correlation.groups.length > 0) {
   // Jobs are ready for submission to JobForge
   console.log(JSON.stringify(jobs, null, 2));
 }
+
+// JobForge integration surface
+const { reportEnvelope, jobRequestBundle } = analyze({
+  tenant_id: 'acme-prod',
+  project_id: 'api-platform',
+  trace_id: 'trace-123',
+  alerts,
+  report: {
+    tenant_id: 'acme-prod',
+    project_id: 'api-platform',
+    report_type: 'health_check',
+    period_start: '2026-01-01T00:00:00Z',
+    period_end: '2026-01-31T23:59:59Z',
+    profile_id: 'ops-base',
+  },
+});
+
+const markdown = renderReport(reportEnvelope);
+console.log(jobRequestBundle, markdown);
 ```
 
 ## Architecture
@@ -297,22 +357,22 @@ Built-in templates for common scenarios:
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Build
-npm run build
+pnpm build
 
 # Run tests
-npm run test
+pnpm test
 
 # Run linting
-npm run lint
+pnpm lint
 
 # Type check
-npm run typecheck
+pnpm typecheck
 
 # Run CLI locally
-npm run cli -- ingest --tenant test --project test --file ./examples/alerts.json
+pnpm run cli -- ingest --tenant test --project test --file ./examples/alerts.json
 ```
 
 ## Testing
@@ -334,9 +394,9 @@ GitHub Actions workflow included:
 
 ```yaml
 # .github/workflows/ci.yml
-# Runs on: push to main/develop, pull requests
-# Matrix: Node.js 18.x, 20.x
-# Steps: install, lint, typecheck, test, build
+# Runs on: pull requests (verify:fast), pushes to main (verify:full + docs:verify)
+# Node.js 20.x
+# Steps: install, verify scripts
 ```
 
 ## License

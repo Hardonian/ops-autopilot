@@ -32,7 +32,7 @@ export default [
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/prefer-const': 'error',
+      'prefer-const': 'error',
       'no-console': 'off',
     },
   },

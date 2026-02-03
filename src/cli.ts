@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
+import { z } from 'zod';
+import { join } from 'path';
 import {
   IngestInputSchema,
   CorrelationInputSchema,
@@ -11,8 +13,20 @@ import {
   type CorrelationInput,
   type RunbookInput,
   type ReportInput,
+  type Alert,
+  type Runbook,
+  type CorrelatedAlertGroup,
+  type AlertCorrelation,
+  type ReliabilityReport,
   type JobRequest,
 } from './contracts/index.js';
+import {
+  analyze,
+  renderReport,
+  serializeBundle,
+  serializeReport,
+  type AnalyzeInput,
+} from './jobforge/integration.js';
 import {
   correlateAlerts,
   createAlertCorrelation,
@@ -28,7 +42,8 @@ import {
   createReliabilityReportJobs,
 } from './jobforge/index.js';
 import { getOpsProfile } from './profiles/index.js';
-import { readFileSync, existsSync } from 'fs';
+import { generateReliabilityReport } from './reports/index.js';
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'fs';
 
 /**
  * Ops Autopilot CLI
@@ -46,6 +61,64 @@ program
   .name('ops-autopilot')
   .description('Runnerless reliability autopilot - detects infrastructure anomalies and produces JobForge requests')
   .version('0.1.0');
+
+// ============================================================================
+// Analyze Command (JobForge Integration)
+// ============================================================================
+
+program
+  .command('analyze')
+  .description('Generate JobForge request bundle and report (runnerless, dry-run)')
+  .requiredOption('--inputs <path>', 'Path to analysis inputs JSON')
+  .requiredOption('--tenant <tenant>', 'Tenant ID')
+  .requiredOption('--project <project>', 'Project ID')
+  .requiredOption('--trace <trace>', 'Trace ID')
+  .requiredOption('--out <dir>', 'Output directory')
+  .option('--stable-output', 'Write deterministic outputs for fixtures/docs', false)
+  .action(async (options) => {
+    try {
+      if (!existsSync(options.inputs)) {
+        throw new Error(`Inputs file not found: ${options.inputs}`);
+      }
+
+      const content = readFileSync(options.inputs, 'utf-8');
+      const parsed = JSON.parse(content);
+
+      const input: AnalyzeInput = {
+        ...parsed,
+        tenant_id: options.tenant,
+        project_id: options.project,
+        trace_id: options.trace,
+      };
+
+      const result = analyze(input, { stableOutput: options.stableOutput });
+
+      mkdirSync(options.out, { recursive: true });
+
+      const requestBundlePath = join(options.out, 'request-bundle.json');
+      const reportPath = join(options.out, 'report.json');
+      const reportMdPath = join(options.out, 'report.md');
+
+      writeFileSync(requestBundlePath, serializeBundle(result.jobRequestBundle));
+      writeFileSync(reportPath, serializeReport(result.reportEnvelope));
+      writeFileSync(reportMdPath, renderReport(result.reportEnvelope));
+
+      console.error('✅ Analyze complete');
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.error('❌ Analyze failed: validation error');
+        console.error(error.errors.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('\n'));
+        process.exit(2);
+      }
+
+      if (process.env.DEBUG) {
+        console.error('❌ Analyze failed:', error);
+      } else {
+        console.error('❌ Analyze failed: unexpected error');
+      }
+      process.exit(1);
+    }
+  });
 
 // ============================================================================
 // Ingest Command
@@ -70,20 +143,20 @@ program
       console.error('🔍 Ops Autopilot - Ingest Mode');
       console.error(`Tenant: ${options.tenant}, Project: ${options.project}`);
 
-      let alerts = [];
+      let alerts: Alert[] = [];
       
       // Load alerts from file if provided
       if (options.file && existsSync(options.file)) {
         const content = readFileSync(options.file, 'utf-8');
         const parsed = JSON.parse(content);
-        alerts = Array.isArray(parsed) ? parsed : parsed.alerts ?? [];
+        alerts = (Array.isArray(parsed) ? parsed : parsed.alerts ?? []) as Alert[];
         console.error(`📥 Loaded ${alerts.length} alerts from ${options.file}`);
       }
 
       // Parse raw events if provided
-      let rawEvents = [];
+      let rawEvents: Record<string, unknown>[] = [];
       if (options.rawEvents) {
-        rawEvents = JSON.parse(options.rawEvents);
+        rawEvents = JSON.parse(options.rawEvents) as Record<string, unknown>[];
         console.error(`📥 Parsed ${rawEvents.length} raw events`);
       }
 
@@ -104,11 +177,14 @@ program
       };
 
       // Validate input
-      const validated = IngestInputSchema.parse(input);
+      const validated = IngestInputSchema.parse(input) as IngestInput;
+
+      const validatedAlerts = (validated.alerts ?? []) as Alert[];
+      const validatedEvents = (validated.raw_events ?? []) as unknown[];
 
       // Calculate metrics
-      if (validated.alerts && validated.alerts.length > 0) {
-        const metrics = calculateAlertMetrics(validated.alerts);
+      if (validatedAlerts.length > 0) {
+        const metrics = calculateAlertMetrics(validatedAlerts);
         console.error('📊 Alert Metrics:', JSON.stringify(metrics, null, 2));
       }
 
@@ -117,14 +193,13 @@ program
         ingest_id: generateId(),
         ...validated,
         processed_at: new Date().toISOString(),
-        alert_count: validated.alerts?.length ?? 0,
-        event_count: validated.raw_events?.length ?? 0,
+        alert_count: validatedAlerts.length,
+        event_count: validatedEvents.length,
       };
 
       const output = JSON.stringify(result, null, 2);
       
       if (options.output) {
-        const { writeFileSync } = await import('fs');
         writeFileSync(options.output, output);
         console.error(`💾 Output written to ${options.output}`);
       } else {
@@ -172,7 +247,7 @@ program
       console.error(`📥 Loaded ${rawAlerts.length} alerts`);
 
       // Validate alerts
-      const alerts = validateAlerts(rawAlerts);
+      const alerts = validateAlerts(rawAlerts as Alert[]);
 
       // Apply filters
       const filter: AlertFilter = {};
@@ -202,19 +277,24 @@ program
       };
 
       // Validate input
-      const validated = CorrelationInputSchema.parse(input);
+      const validated = CorrelationInputSchema.parse(input) as CorrelationInput;
 
       // Run correlation
-      const correlationResult = correlateAlerts(validated.alerts, undefined, profile ?? undefined);
+      const correlationAlerts = validated.alerts as Alert[];
+      const correlationResult = correlateAlerts(correlationAlerts, undefined, profile ?? undefined);
       const correlation = createAlertCorrelation(
         options.tenant,
         options.project,
         correlationResult,
         options.profile
-      );
+      ) as unknown as AlertCorrelation;
+      const correlationSummary = correlation as unknown as {
+        groups: Array<unknown>;
+        summary: { total_alerts: number };
+      };
 
-      console.error(`📊 Found ${correlation.groups.length} correlated groups`);
-      console.error(`   - ${correlation.summary.total_alerts} total alerts`);
+      console.error(`📊 Found ${correlationSummary.groups.length} correlated groups`);
+      console.error(`   - ${correlationSummary.summary.total_alerts} total alerts`);
       console.error(`   - ${correlationResult.ungrouped.length} ungrouped alerts`);
 
       // Generate job requests if requested
@@ -234,7 +314,6 @@ program
       const output = JSON.stringify(result, null, 2);
       
       if (options.output) {
-        const { writeFileSync } = await import('fs');
         writeFileSync(options.output, output);
         console.error(`💾 Output written to ${options.output}`);
       } else {
@@ -274,10 +353,7 @@ program
       }
 
       const content = readFileSync(options.file, 'utf-8');
-      const alertGroup = JSON.parse(content);
-
-      // Get profile
-      const profile = getOpsProfile(options.profile);
+      const alertGroup = JSON.parse(content) as RunbookInput['alert_group'];
 
       // Build input
       const input: RunbookInput = {
@@ -289,18 +365,20 @@ program
       };
 
       // Validate input
-      const validated = RunbookInputSchema.parse(input);
+      const validated = RunbookInputSchema.parse(input) as RunbookInput;
 
       // Generate runbook
-      const runbook = generateRunbook(validated.alert_group, profile ?? undefined, {
+      const runbookInput = validated.alert_group as RunbookInput['alert_group'];
+      const runbook = generateRunbook(runbookInput as CorrelatedAlertGroup, {
         includeAutomation: options.includeAutomation,
         includeRollback: options.includeRollback,
-      });
+      }) as unknown as Runbook;
+      const runbookSteps = runbook.steps as Array<{ automated: boolean; requires_approval: boolean }>;
 
       console.error(`📘 Generated runbook: ${runbook.name}`);
-      console.error(`   - ${runbook.steps.length} steps`);
-      console.error(`   - ${runbook.steps.filter(s => s.automated).length} automated steps`);
-      console.error(`   - ${runbook.steps.filter(s => s.requires_approval).length} steps require approval`);
+      console.error(`   - ${runbookSteps.length} steps`);
+      console.error(`   - ${runbookSteps.filter((s) => s.automated).length} automated steps`);
+      console.error(`   - ${runbookSteps.filter((s) => s.requires_approval).length} steps require approval`);
       console.error(`   - Estimated duration: ${runbook.estimated_duration_minutes} minutes`);
 
       // Generate job requests if requested
@@ -320,7 +398,6 @@ program
       const output = JSON.stringify(result, null, 2);
       
       if (options.output) {
-        const { writeFileSync } = await import('fs');
         writeFileSync(options.output, output);
         console.error(`💾 Output written to ${options.output}`);
       } else {
@@ -362,7 +439,7 @@ program
         : undefined;
 
       // Load alerts if provided
-      let alerts = [];
+      let alerts: Alert[] = [];
       if (options.alertsFile && existsSync(options.alertsFile)) {
         const content = readFileSync(options.alertsFile, 'utf-8');
         const parsed = JSON.parse(content);
@@ -382,17 +459,24 @@ program
       };
 
       // Validate input
-      const validated = ReportInputSchema.parse(input);
+      const validated = ReportInputSchema.parse(input) as ReportInput;
 
       // Generate report (simplified version for CLI)
-      const report = generateReliabilityReport(validated, alerts);
+      const report = generateReliabilityReport(validated, alerts) as unknown as ReliabilityReport;
+      const reportStats = report as {
+        service_health: unknown[];
+        anomalies: unknown[];
+        findings: unknown[];
+        recommendations: unknown[];
+        overall_health_score: number;
+      };
 
       console.error(`📈 Generated ${validated.report_type} report`);
-      console.error(`   - ${report.service_health.length} services analyzed`);
-      console.error(`   - ${report.anomalies.length} anomalies detected`);
-      console.error(`   - ${report.findings.length} findings`);
-      console.error(`   - ${report.recommendations.length} recommendations`);
-      console.error(`   - Health score: ${report.overall_health_score}/100`);
+      console.error(`   - ${reportStats.service_health.length} services analyzed`);
+      console.error(`   - ${reportStats.anomalies.length} anomalies detected`);
+      console.error(`   - ${reportStats.findings.length} findings`);
+      console.error(`   - ${reportStats.recommendations.length} recommendations`);
+      console.error(`   - Health score: ${reportStats.overall_health_score}/100`);
 
       // Generate job requests if requested
       let jobs: JobRequest[] = [];
@@ -411,7 +495,6 @@ program
       const output = JSON.stringify(result, null, 2);
       
       if (options.output) {
-        const { writeFileSync } = await import('fs');
         writeFileSync(options.output, output);
         console.error(`💾 Output written to ${options.output}`);
       } else {
@@ -424,113 +507,6 @@ program
       process.exit(1);
     }
   });
-
-// ============================================================================
-// Report Generation Helper
-// ============================================================================
-
-function generateReliabilityReport(
-  input: ReportInput,
-  alerts: unknown[]
-): import('./contracts/index.js').ReliabilityReport {
-  const { 
-    ReliabilityReportSchema,
-    generateId,
-    computeHash,
-  } = require('./contracts/index.js');
-
-  const findings = [];
-  const recommendations = [];
-  const anomalies = [];
-  const serviceHealth = [];
-
-  // Analyze alerts to generate findings
-  let criticalAlerts: any[] = [];
-  if (alerts.length > 0) {
-    // Critical alerts finding
-    criticalAlerts = alerts.filter((a: any) => a.severity === 'critical');
-    if (criticalAlerts.length > 0) {
-      findings.push({
-        id: generateId(),
-        severity: 'critical',
-        category: 'incident_response',
-        message: `${criticalAlerts.length} critical alerts during reporting period`,
-        recommendation: 'Review critical incidents and ensure runbooks exist',
-        evidence: [
-          {
-            type: 'event_count',
-            path: 'alerts',
-            value: criticalAlerts.length,
-            description: 'Count of critical severity alerts',
-          },
-        ],
-      });
-
-      recommendations.push({
-        priority: 'critical',
-        category: 'incident_response',
-        description: 'Improve early detection for critical issues',
-        expected_impact: 'Reduce MTTR for critical incidents',
-        implementation_effort: 'medium',
-        related_findings: [findings[findings.length - 1].id],
-      });
-    }
-
-    // Generate anomaly for alert spike
-    if (alerts.length > 50) {
-      anomalies.push({
-        anomaly_id: generateId(),
-        type: 'spike',
-        service: 'multiple',
-        metric: 'alert_count',
-        detected_at: input.period_end,
-        severity: 'warning',
-        baseline_value: 10,
-        observed_value: alerts.length,
-        deviation_percent: ((alerts.length - 10) / 10) * 100,
-        contributing_factors: ['Unusual alert volume', 'Possible infrastructure event'],
-      });
-    }
-  }
-
-  // Generate service health based on services list
-  if (input.services) {
-    for (const service of input.services) {
-      serviceHealth.push({
-        service_name: service,
-        status: 'healthy',
-        availability_percent: 99.9,
-        latency_p95_ms: 150,
-        error_rate_percent: 0.1,
-        metrics: [],
-      });
-    }
-  }
-
-  // Calculate health score
-  const healthScore = Math.max(0, 100 - (criticalAlerts?.length ?? 0) * 10 - (anomalies.length * 5));
-
-  const report = {
-    report_id: generateId(),
-    tenant_id: input.tenant_id,
-    project_id: input.project_id,
-    report_type: input.report_type,
-    period_start: input.period_start,
-    period_end: input.period_end,
-    generated_at: new Date().toISOString(),
-    overall_health_score: healthScore,
-    service_health: serviceHealth,
-    anomalies,
-    findings,
-    recommendations,
-    job_requests: [],
-    profile_id: input.profile_id,
-    report_hash: computeHash(`${input.tenant_id}:${input.project_id}:${input.period_start}:${input.period_end}`),
-    redaction_applied: true,
-  };
-
-  return ReliabilityReportSchema.parse(report);
-}
 
 // ============================================================================
 // Execute CLI

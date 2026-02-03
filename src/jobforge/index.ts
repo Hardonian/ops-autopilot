@@ -1,13 +1,12 @@
 import {
-  buildJobRequest,
-  createJobBatch,
-  type RequestBuilderOptions,
-  type JobBatch,
-} from '@autopilot/jobforge-client';
-import type {
-  TenantContext,
-  JobRequest,
+  JobRequestSchema,
+  batchJobRequests,
+  serializeJobBatch,
+  serializeJobRequest,
+  type JobRequest,
+  type TenantContext,
 } from '@autopilot/contracts';
+import { validateBatch, validateRequest } from '@autopilot/jobforge-client';
 import {
   type AlertCorrelation,
   type Runbook,
@@ -17,23 +16,61 @@ import {
 
 /**
  * JobForge Request Generators for Ops Autopilot
- * 
+ *
  * IMPORTANT: This module generates JobForge job requests but does NOT execute them.
- * All requests have:
- * - auto_execute: false (runnerless - no local execution)
- * - require_approval: true (human approval required)
- * - require_policy_token: true (policy enforcement)
+ * All requests enforce:
+ * - requires_approval: true (human approval required)
+ * - requires_policy_token: true (policy enforcement)
+ * - runnerless metadata for JobForge gating
  */
 
-// ============================================================================
-// Default Constraints (Runnerless Enforcement)
-// ============================================================================
+export interface RunnerlessRequestOptions {
+  priority?: 'low' | 'normal' | 'high' | 'critical';
+  requestedAt?: string;
+  expiresAt?: string;
+  traceId?: string;
+  evidenceLinks?: Array<{ type: string; id: string; description: string }>;
+  riskLevel?: 'low' | 'medium' | 'high' | 'critical';
+}
 
-const DEFAULT_OPS_CONSTRAINTS: RequestBuilderOptions = {
-  autoExecute: false,
-  requireApproval: true,
-  triggeredBy: 'ops-autopilot',
-};
+export type RequestBuilderOptions = RunnerlessRequestOptions;
+
+export type JobBatch = ReturnType<typeof batchJobRequests>;
+
+function buildRunnerlessJobRequest(
+  tenantContext: TenantContext,
+  job_type: JobRequest['job_type'],
+  payload: Record<string, unknown>,
+  options: RunnerlessRequestOptions = {}
+): JobRequest {
+  const metadata: Record<string, unknown> = {
+    runnerless: true,
+    triggered_by: 'ops-autopilot',
+  };
+
+  if (options.traceId) {
+    metadata.trace_id = options.traceId;
+  }
+
+  return JobRequestSchema.parse({
+    version: '1.0.0',
+    job_type,
+    tenant_context: tenantContext,
+    priority: options.priority ?? 'normal',
+    requested_at: options.requestedAt ?? new Date().toISOString(),
+    expires_at: options.expiresAt,
+    payload,
+    evidence_links: options.evidenceLinks ?? [],
+    policy: {
+      requires_policy_token: true,
+      requires_approval: true,
+      risk_level: options.riskLevel ?? 'high',
+      required_scopes: [],
+      compliance_tags: [],
+    },
+    metadata,
+  });
+}
 
 // ============================================================================
 // Alert Correlation Job Requests
@@ -50,43 +87,38 @@ export interface AlertCorrelationJobPayload {
   profile_id: string;
 }
 
-/**
- * Create a job request to correlate alerts
- */
 export function createAlertCorrelationRequest(
   tenantContext: TenantContext,
   payload: AlertCorrelationJobPayload,
-  options?: RequestBuilderOptions
+  options?: RunnerlessRequestOptions
 ): JobRequest {
-  return buildJobRequest(
+  return buildRunnerlessJobRequest(
     tenantContext,
     'autopilot.ops.alert_correlate',
-    payload,
-    { ...DEFAULT_OPS_CONSTRAINTS, ...options }
+    payload as unknown as Record<string, unknown>,
+    options
   );
 }
 
-/**
- * Create job requests from an AlertCorrelation result
- */
 export function createAlertCorrelationJobs(
   tenantContext: TenantContext,
   correlation: AlertCorrelation,
-  options?: RequestBuilderOptions
+  options?: RunnerlessRequestOptions
 ): JobRequest[] {
   const jobs: JobRequest[] = [];
-  
-  // Create jobs for each correlated group that needs investigation
+
   for (const group of correlation.groups) {
-    if (group.blast_radius.estimated_impact === 'high' || 
-        group.blast_radius.estimated_impact === 'critical') {
+    if (
+      group.blast_radius.estimated_impact === 'high' ||
+      group.blast_radius.estimated_impact === 'critical'
+    ) {
       jobs.push(
-        buildJobRequest(
+        buildRunnerlessJobRequest(
           tenantContext,
           'autopilot.ops.alert_correlate',
           {
             correlation_group_id: group.group_id,
-            alert_ids: group.alerts.map(a => a.alert_id),
+            alert_ids: group.alerts.map((a) => a.alert_id),
             root_cause: group.root_cause_analysis.probable_cause,
             confidence: group.root_cause_analysis.confidence,
             services_affected: group.blast_radius.services_affected,
@@ -94,16 +126,14 @@ export function createAlertCorrelationJobs(
             profile_id: correlation.profile_id,
           },
           {
-            ...DEFAULT_OPS_CONSTRAINTS,
             ...options,
             priority: 'critical',
-            notes: `High-impact alert correlation: ${group.root_cause_analysis.probable_cause}`,
           }
         )
       );
     }
   }
-  
+
   return jobs;
 }
 
@@ -123,84 +153,71 @@ export interface RunbookGenerationJobPayload {
   profile_id: string;
 }
 
-/**
- * Create a job request to generate a runbook
- */
 export function createRunbookGenerationRequest(
   tenantContext: TenantContext,
   payload: RunbookGenerationJobPayload,
-  options?: RequestBuilderOptions
+  options?: RunnerlessRequestOptions
 ): JobRequest {
-  return buildJobRequest(
+  return buildRunnerlessJobRequest(
     tenantContext,
     'autopilot.ops.runbook_generate',
     {
       ...payload,
       runbook_id: payload.runbook_id ?? generateId(),
-    },
-    { ...DEFAULT_OPS_CONSTRAINTS, ...options }
+    } as unknown as Record<string, unknown>,
+    options
   );
 }
 
-/**
- * Create job requests from a generated Runbook
- */
 export function createRunbookJobs(
   tenantContext: TenantContext,
   runbook: Runbook,
-  options?: RequestBuilderOptions
+  options?: RunnerlessRequestOptions
 ): JobRequest[] {
   const jobs: JobRequest[] = [];
-  
-  // Create jobs for automated steps in the runbook
-  const automatedSteps = runbook.steps.filter(step => step.automated);
-  
+  const automatedSteps = runbook.steps.filter((step) => step.automated);
+
   if (automatedSteps.length > 0) {
     jobs.push(
-      buildJobRequest(
+      buildRunnerlessJobRequest(
         tenantContext,
         'autopilot.ops.runbook_generate',
         {
           runbook_id: runbook.runbook_id,
           action: 'execute_automated_steps',
-          automated_step_numbers: automatedSteps.map(s => s.step_number),
-          requires_approval_before_each: automatedSteps.some(s => s.requires_approval),
+          automated_step_numbers: automatedSteps.map((s) => s.step_number),
+          requires_approval_before_each: automatedSteps.some((s) => s.requires_approval),
           estimated_duration_minutes: runbook.estimated_duration_minutes,
           profile_id: 'base',
         },
         {
-          ...DEFAULT_OPS_CONSTRAINTS,
           ...options,
           priority: runbook.severity === 'critical' ? 'critical' : 'high',
-          notes: `Execute automated steps for runbook: ${runbook.name}`,
         }
       )
     );
   }
-  
-  // Create approval jobs for manual steps if critical
+
   if (runbook.severity === 'critical') {
     jobs.push(
-      buildJobRequest(
+      buildRunnerlessJobRequest(
         tenantContext,
         'autopilot.ops.runbook_generate',
         {
           runbook_id: runbook.runbook_id,
           action: 'notify_oncall',
           severity: runbook.severity,
-          steps_require_manual: runbook.steps.filter(s => !s.automated).length,
+          steps_require_manual: runbook.steps.filter((s) => !s.automated).length,
           profile_id: 'base',
         },
         {
-          ...DEFAULT_OPS_CONSTRAINTS,
           ...options,
           priority: 'critical',
-          notes: `Critical runbook requires manual intervention: ${runbook.name}`,
         }
       )
     );
   }
-  
+
   return jobs;
 }
 
@@ -219,43 +236,36 @@ export interface ReliabilityReportJobPayload {
   profile_id: string;
 }
 
-/**
- * Create a job request to generate a reliability report
- */
 export function createReliabilityReportRequest(
   tenantContext: TenantContext,
   payload: ReliabilityReportJobPayload,
-  options?: RequestBuilderOptions
+  options?: RunnerlessRequestOptions
 ): JobRequest {
-  return buildJobRequest(
+  return buildRunnerlessJobRequest(
     tenantContext,
     'autopilot.ops.reliability_report',
     {
       ...payload,
       report_id: payload.report_id ?? generateId(),
-    },
-    { ...DEFAULT_OPS_CONSTRAINTS, ...options }
+    } as unknown as Record<string, unknown>,
+    options
   );
 }
 
-/**
- * Create job requests from a ReliabilityReport result
- */
 export function createReliabilityReportJobs(
   tenantContext: TenantContext,
   report: ReliabilityReport,
-  options?: RequestBuilderOptions
+  options?: RunnerlessRequestOptions
 ): JobRequest[] {
   const jobs: JobRequest[] = [];
-  
-  // Create jobs for critical recommendations
+
   const criticalRecommendations = report.recommendations.filter(
-    r => r.priority === 'critical'
+    (r) => r.priority === 'critical'
   );
-  
+
   for (const rec of criticalRecommendations) {
     jobs.push(
-      buildJobRequest(
+      buildRunnerlessJobRequest(
         tenantContext,
         'autopilot.ops.reliability_report',
         {
@@ -270,23 +280,20 @@ export function createReliabilityReportJobs(
           profile_id: report.profile_id,
         },
         {
-          ...DEFAULT_OPS_CONSTRAINTS,
           ...options,
           priority: 'critical',
-          notes: `Critical reliability recommendation: ${rec.category}`,
         }
       )
     );
   }
-  
-  // Create jobs for high-priority anomalies
+
   const criticalAnomalies = report.anomalies.filter(
-    a => a.severity === 'critical'
+    (a) => a.severity === 'critical'
   );
-  
+
   for (const anomaly of criticalAnomalies) {
     jobs.push(
-      buildJobRequest(
+      buildRunnerlessJobRequest(
         tenantContext,
         'autopilot.ops.reliability_report',
         {
@@ -300,15 +307,13 @@ export function createReliabilityReportJobs(
           profile_id: report.profile_id,
         },
         {
-          ...DEFAULT_OPS_CONSTRAINTS,
           ...options,
           priority: 'critical',
-          notes: `Investigate critical anomaly in ${anomaly.service}:${anomaly.metric}`,
         }
       )
     );
   }
-  
+
   return jobs;
 }
 
@@ -316,46 +321,64 @@ export function createReliabilityReportJobs(
 // Batch Operations
 // ============================================================================
 
-/**
- * Create a batch of all ops jobs from a complete analysis
- */
 export function createOpsJobBatch(
   tenantContext: TenantContext,
   correlation?: AlertCorrelation,
   runbooks?: Runbook[],
   report?: ReliabilityReport,
-  options?: RequestBuilderOptions
+  options?: RunnerlessRequestOptions
 ): JobBatch {
   const allJobs: JobRequest[] = [];
-  
+
   if (correlation) {
     allJobs.push(...createAlertCorrelationJobs(tenantContext, correlation, options));
   }
-  
+
   if (runbooks) {
     for (const runbook of runbooks) {
       allJobs.push(...createRunbookJobs(tenantContext, runbook, options));
     }
   }
-  
+
   if (report) {
     allJobs.push(...createReliabilityReportJobs(tenantContext, report, options));
   }
-  
-  return createJobBatch(allJobs, tenantContext);
+
+  return batchJobRequests(allJobs);
+}
+
+export function createJobBatch(requests: JobRequest[]): JobBatch {
+  return batchJobRequests(requests);
+}
+
+export function groupJobsByType(requests: JobRequest[]): Record<string, JobRequest[]> {
+  return requests.reduce<Record<string, JobRequest[]>>((acc, request) => {
+    const jobType = String((request as { job_type?: unknown }).job_type ?? 'unknown');
+    if (!acc[jobType]) {
+      acc[jobType] = [];
+    }
+    acc[jobType].push(request);
+    return acc;
+  }, {});
+}
+
+export function serializeJobsAsJsonLines(requests: JobRequest[]): string {
+  return requests.map((request) => JSON.stringify(request)).join('\n');
 }
 
 // ============================================================================
-// Re-exports
+// Validation + Serialization
 // ============================================================================
 
+export function validateJobRequest(request: unknown): ReturnType<typeof validateRequest> {
+  return validateRequest(request);
+}
+
+export function validateJobBatch(batch: unknown): ReturnType<typeof validateBatch> {
+  return validateBatch(batch);
+}
+
 export {
-  type RequestBuilderOptions,
-  type JobBatch,
-  createJobBatch,
-  groupJobsByType,
   serializeJobRequest,
   serializeJobBatch,
-  serializeJobsAsJsonLines,
-  validateJobRequest,
-} from '@autopilot/jobforge-client';
+};

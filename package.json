@@ -33,12 +33,15 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "cli": "node ./dist/cli.js"
+    "cli": "node ./dist/cli.js",
+    "verify:fast": "pnpm lint && pnpm typecheck && pnpm build",
+    "verify:full": "pnpm verify:fast && pnpm test",
+    "docs:verify": "pnpm build && node ./scripts/docs-verify.js"
   },
   "dependencies": {
-    "@autopilot/contracts": "file:../autopilot-suite/packages/contracts",
-    "@autopilot/jobforge-client": "file:../autopilot-suite/packages/jobforge-client",
-    "@autopilot/profiles": "file:../autopilot-suite/packages/profiles",
+    "@autopilot/contracts": "file:./autopilot-suite/packages/contracts",
+    "@autopilot/jobforge-client": "file:./autopilot-suite/packages/jobforge-client",
+    "@autopilot/profiles": "file:./autopilot-suite/packages/profiles",
     "commander": "^12.0.0",
     "zod": "^3.23.8"
   },

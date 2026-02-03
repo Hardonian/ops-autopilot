@@ -1,20 +1,23 @@
+import { createHash, randomUUID } from 'crypto';
 import { z } from 'zod';
+import {
+  SeveritySchema,
+  JobRequestSchema,
+  type TenantContext,
+  type Severity,
+  type JobRequest,
+} from '@autopilot/contracts';
 import {
   TenantIdSchema,
   ProjectIdSchema,
   EventIdSchema,
   TimestampSchema,
   HashSchema,
-  SeveritySchema,
   EvidenceLinkSchema,
   FindingSchema,
-  JobRequestSchema,
-  type TenantContext,
-  type Severity,
   type EvidenceLink,
   type Finding,
-  type JobRequest,
-} from '@autopilot/contracts';
+} from './base.js';
 
 /**
  * Ops Autopilot Contracts
@@ -316,15 +319,11 @@ export type ReportInput = z.infer<typeof ReportInputSchema>;
 // ============================================================================
 
 export function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  return randomUUID();
 }
 
 export function computeHash(input: string): string {
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    const char = input.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(16).padStart(64, '0');
+  return createHash('sha256').update(input).digest('hex');
 }
+
+export * from './compat.js';

@@ -1,5 +1,5 @@
 import { type Profile, validateProfile, extendProfile } from '@autopilot/contracts';
-import { baseProfile } from '../base.js';
+import { baseProfile } from './base.js';
 import {
   jobforgeProfile,
   settlerProfile,
