@@ -244,59 +244,64 @@ async function performAudit(
   const metrics: Record<string, number> = {};
   const recommendations: HealthAuditOutput['recommendations'] = [];
 
-  for (const service of services) {
-    try {
+  // Batch service health checks for better I/O efficiency
+  const healthResults = await Promise.allSettled(
+    services.map(async service => {
       const health = await deps.checkServiceHealth(service);
-      servicesAudited.push(service);
+      return { service, health };
+    })
+  );
 
-      if (input.include_metrics) {
-        const timeRange =
-          input.time_range?.start && input.time_range?.end
-            ? { start: input.time_range.start, end: input.time_range.end }
-            : undefined;
-        const metricsData = await deps.fetchServiceMetrics(service, timeRange);
-        Object.assign(metrics, metricsData.metrics);
-      }
+  for (const result of healthResults) {
+    if (result.status === 'rejected') {
+      // Propagate the error to trigger retry logic
+      throw result.reason;
+    }
 
-      if (health.status !== 'healthy') {
-        findings.push({
-          id: `finding-${service}-${Date.now()}`,
-          severity: health.status === 'unhealthy' ? 'critical' : 'warning',
-          category: 'service_health',
-          message: `${service} is ${health.status}`,
-          recommendation: `Investigate ${service} degradation and consider scaling or restarting`,
-          evidence: [
-            {
-              type: 'health_check',
-              path: `services/${service}/health`,
-              value: health,
-              description: `Health status for ${service}`,
-            },
-          ],
-        });
+    const { service, health } = result.value;
+    servicesAudited.push(service);
 
-        recommendations.push({
-          priority: health.status === 'unhealthy' ? 'critical' : 'high',
-          description: `${service} requires attention`,
-          action: `Check ${service} logs and metrics`,
-        });
-      }
-    } catch (error) {
+    if (health.status !== 'healthy') {
       findings.push({
-        id: `finding-${service}-error-${Date.now()}`,
-        severity: 'critical',
-        category: 'dependency_failure',
-        message: `Failed to audit ${service}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        recommendation: 'Verify monitoring infrastructure connectivity',
+        id: `finding-${service}-${Date.now()}`,
+        severity: health.status === 'unhealthy' ? 'critical' : 'warning',
+        category: 'service_health',
+        message: `${service} is ${health.status}`,
+        recommendation: `Investigate ${service} degradation and consider scaling or restarting`,
         evidence: [
           {
-            type: 'error',
-            path: `services/${service}`,
-            value: error instanceof Error ? error.message : 'Unknown',
-            description: `Error during ${service} audit`,
+            type: 'health_check',
+            path: `services/${service}/health`,
+            value: health,
+            description: `Health status for ${service}`,
           },
         ],
       });
+
+      recommendations.push({
+        priority: health.status === 'unhealthy' ? 'critical' : 'high',
+        description: `${service} requires attention`,
+        action: `Check ${service} logs and metrics`,
+      });
+    }
+  }
+
+  // Fetch metrics only for successfully audited services with include_metrics
+  if (input.include_metrics && servicesAudited.length > 0) {
+    const timeRange =
+      input.time_range?.start && input.time_range?.end
+        ? { start: input.time_range.start, end: input.time_range.end }
+        : undefined;
+
+    // Batch metric requests
+    const metricsResults = await Promise.allSettled(
+      servicesAudited.map(service => deps.fetchServiceMetrics(service, timeRange))
+    );
+
+    for (const result of metricsResults) {
+      if (result.status === 'fulfilled') {
+        Object.assign(metrics, result.value.metrics);
+      }
     }
   }
 
