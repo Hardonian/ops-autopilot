@@ -9,12 +9,14 @@ import {
   executeHealthAudit,
   getCapabilityMetadata,
   validateHealthAuditInput,
+  _resetCircuitBreakerForTesting,
 } from '../src/capabilities/health-audit.js';
 import { HealthAuditCapabilityMetadata } from '../src/contracts/index.js';
 
 describe('Health Audit Capability', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    _resetCircuitBreakerForTesting();
   });
 
   describe('Capability Metadata', () => {
