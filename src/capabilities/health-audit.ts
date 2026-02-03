@@ -294,7 +294,12 @@ async function performAudit(
       continue;
     }
 
-    const { health } = result.value;
+    // Extract health data from the wrapped result
+    const health = result.value?.health;
+    if (!health) {
+      // Malformed result - skip this service
+      continue;
+    }
     servicesAudited.push(service);
 
     if (health.status !== 'healthy') {
