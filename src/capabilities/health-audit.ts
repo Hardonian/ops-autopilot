@@ -196,7 +196,8 @@ interface AuditDependencies {
 async function performAudit(
   input: HealthAuditInput,
   deps: AuditDependencies,
-  attempt: number
+  attempt: number,
+  idempotencyKey: string
 ): Promise<HealthAuditOutput> {
   const startedAt = new Date().toISOString();
   const startTime = Date.now();
@@ -280,7 +281,7 @@ async function performAudit(
       attempts: attempt,
       execution_time_ms: executionTimeMs,
     },
-    idempotency_key: input.idempotency_key,
+    idempotency_key: idempotencyKey,
   });
 }
 
@@ -430,7 +431,7 @@ export async function executeHealthAudit(
     }
 
     try {
-      const output = await performAudit(validatedInput, deps, attempt);
+      const output = await performAudit(validatedInput, deps, attempt, idempotencyKey);
       circuitBreaker.recordSuccess();
 
       // Store in idempotency store (unless skipped for testing)

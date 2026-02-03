@@ -184,6 +184,20 @@ export {
 } from './profiles/index.js';
 
 // ============================================================================
+// Capability Exports
+// ============================================================================
+
+export {
+  // Health Audit Capability
+  executeHealthAudit,
+  getCapabilityMetadata,
+  validateHealthAuditInput,
+  type ExecuteHealthAuditOptions,
+  type RetryState,
+  type CircuitBreakerState,
+} from './capabilities/health-audit.js';
+
+// ============================================================================
 // Version
 // ============================================================================
 

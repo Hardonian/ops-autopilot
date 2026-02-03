@@ -27,6 +27,31 @@ jobs:
         run: pnpm verify:fast
       - name: Verify JobForge contracts compatibility
         run: pnpm contracts:compat
+      - name: Run contract tests
+        run: pnpm test -- tests/contracts.test.ts
+
+  contract-tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'pnpm'
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm build
+      - name: Run contract tests
+        run: pnpm test -- tests/contracts.test.ts
+      - name: Run capability tests
+        run: pnpm test -- tests/health-audit.test.ts
 
   verify-full:
     if: github.event_name == 'push'
