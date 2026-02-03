@@ -1,0 +1,47 @@
+{
+  "tenant_id": "tenant-demo",
+  "project_id": "project-demo",
+  "trace_id": "trace-demo",
+  "alerts": [
+    {
+      "alert_id": "alert-001",
+      "tenant_id": "tenant-demo",
+      "project_id": "project-demo",
+      "source": "cloudwatch",
+      "status": "open",
+      "title": "CPU saturation",
+      "description": "CPU exceeded 80% for 5 minutes",
+      "severity": "critical",
+      "service": "api-gateway",
+      "metric": "cpu_usage_percent",
+      "threshold": 80,
+      "current_value": 92.3,
+      "timestamp": "2026-01-02T12:00:00Z"
+    },
+    {
+      "alert_id": "alert-002",
+      "tenant_id": "tenant-demo",
+      "project_id": "project-demo",
+      "source": "cloudwatch",
+      "status": "open",
+      "title": "Memory pressure",
+      "description": "Memory exceeded 85% for 5 minutes",
+      "severity": "warning",
+      "service": "api-gateway",
+      "metric": "memory_usage_percent",
+      "threshold": 85,
+      "current_value": 88.1,
+      "timestamp": "2026-01-02T12:02:00Z"
+    }
+  ],
+  "report": {
+    "tenant_id": "tenant-demo",
+    "project_id": "project-demo",
+    "report_type": "health_check",
+    "period_start": "2026-01-01T00:00:00Z",
+    "period_end": "2026-01-31T23:59:59Z",
+    "services": ["api-gateway"],
+    "profile_id": "ops-base"
+  },
+  "profile_id": "ops-base"
+}

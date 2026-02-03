@@ -1,13 +1,23 @@
-import {
-  type Profile,
-  type ProfileConfig,
-  baseProfile,
-  getProfile,
-  listProfiles,
-  mergeProfileWithOverlay,
-  getThreshold,
-  exceedsThreshold,
-} from '@autopilot/profiles';
+export interface Threshold {
+  warning: number;
+  critical: number;
+  enabled: boolean;
+}
+
+export interface ProfileConfig {
+  thresholds: Record<string, Threshold>;
+  features: Record<string, boolean>;
+  weights: Record<string, number>;
+  custom: Record<string, number | string | boolean>;
+}
+
+export interface Profile {
+  id: string;
+  name: string;
+  description: string;
+  config: ProfileConfig;
+  metadata: Record<string, unknown>;
+}
 
 /**
  * Ops Autopilot Profiles
@@ -37,6 +47,122 @@ export interface OpsThresholds {
   availability_threshold_percent: { warning: number; critical: number };
   mttr_target_minutes: { warning: number; critical: number };
   mtbf_target_hours: { warning: number; critical: number };
+}
+
+// ============================================================================
+// Base Profile + Helpers
+// ============================================================================
+
+export const baseProfile: Profile = {
+  id: 'base',
+  name: 'Base Ops Profile',
+  description: 'Baseline ops configuration for infrastructure monitoring',
+  config: {
+    thresholds: {
+      alert_correlation_window_minutes: { warning: 10, critical: 5, enabled: true },
+      error_rate_spike: { warning: 2.0, critical: 5.0, enabled: true },
+      latency_p95_spike: { warning: 1.5, critical: 3.0, enabled: true },
+      memory_usage_threshold: { warning: 80, critical: 95, enabled: true },
+      cpu_usage_threshold: { warning: 70, critical: 90, enabled: true },
+      disk_usage_threshold: { warning: 80, critical: 95, enabled: true },
+      min_alerts_for_correlation: { warning: 3, critical: 2, enabled: true },
+      correlation_confidence_threshold: { warning: 0.6, critical: 0.8, enabled: true },
+      availability_threshold_percent: { warning: 99.0, critical: 99.9, enabled: true },
+      mttr_target_minutes: { warning: 60, critical: 15, enabled: true },
+      mtbf_target_hours: { warning: 168, critical: 720, enabled: true },
+    },
+    features: {
+      auto_redact: true,
+      include_evidence: true,
+      generate_job_requests: true,
+      require_approval: true,
+      enable_alert_correlation: true,
+      enable_runbook_generation: true,
+      enable_anomaly_detection: true,
+      enable_predictive_alerts: false,
+      include_historical_context: true,
+    },
+    weights: {
+      severity_weight: 1.0,
+      blast_radius: 0.8,
+      service_criticality: 0.9,
+      historical_frequency: 0.6,
+      customer_impact: 0.7,
+      temporal_proximity: 0.8,
+      service_dependency: 0.9,
+      metric_correlation: 0.7,
+    },
+    custom: {
+      default_time_window_hours: 24,
+      max_alerts_per_correlation: 50,
+      runbook_max_steps: 20,
+      anomaly_lookback_days: 30,
+      incident_retention_days: 90,
+    },
+  },
+  metadata: {
+    version: '1.0.0',
+    module: 'ops',
+  },
+};
+
+export function mergeProfileWithOverlay(
+  base: Profile,
+  overlay: Partial<ProfileConfig>,
+  id: string
+): Profile {
+  return {
+    ...base,
+    id,
+    config: {
+      thresholds: { ...base.config.thresholds, ...overlay.thresholds },
+      features: { ...base.config.features, ...overlay.features },
+      weights: { ...base.config.weights, ...overlay.weights },
+      custom: { ...base.config.custom, ...overlay.custom },
+    },
+  };
+}
+
+export function getThreshold(
+  profile: Profile,
+  metric: string,
+  level: 'warning' | 'critical'
+): number | undefined {
+  const threshold = profile.config.thresholds[metric];
+  if (!threshold?.enabled) {
+    return undefined;
+  }
+  return threshold[level];
+}
+
+export function exceedsThreshold(
+  profile: Profile,
+  metric: string,
+  value: number
+): { exceeded: boolean; level?: 'warning' | 'critical' } {
+  const threshold = profile.config.thresholds[metric];
+  if (!threshold?.enabled) {
+    return { exceeded: false };
+  }
+
+  if (value >= threshold.critical) {
+    return { exceeded: true, level: 'critical' };
+  }
+  if (value >= threshold.warning) {
+    return { exceeded: true, level: 'warning' };
+  }
+  return { exceeded: false };
+}
+
+export function validateProfile(profile: Profile): { valid: boolean; errors?: string[] } {
+  if (!profile.id || !profile.name || !profile.config) {
+    return { valid: false, errors: ['Missing required profile fields'] };
+  }
+  return { valid: true };
+}
+
+export function serializeProfile(profile: Profile): string {
+  return JSON.stringify(profile, null, 2);
 }
 
 // ============================================================================
@@ -134,6 +260,7 @@ const settlerOpsOverlay: Partial<ProfileConfig> = {
   thresholds: {
     alert_correlation_window_minutes: { warning: 3, critical: 1, enabled: true },
     error_rate_spike: { warning: 1.0, critical: 2.5, enabled: true },
+    payment_failure_rate: { warning: 0.08, critical: 0.15, enabled: true },
     latency_p95_spike: { warning: 1.2, critical: 2.0, enabled: true },
     availability_threshold_percent: { warning: 99.9, critical: 99.99, enabled: true },
   },
@@ -236,7 +363,7 @@ export function createOpsBaseProfile(): Profile {
   return mergeProfileWithOverlay(
     { ...baseProfile, metadata: { ...baseProfile.metadata, module: 'ops' } },
     opsBaseOverlay,
-    'ops-base'
+    'base-ops-base'
   );
 }
 
@@ -300,6 +427,14 @@ export function listOpsProfiles(): Profile[] {
   ];
 }
 
+export function getProfile(id: string): Profile | undefined {
+  return getOpsProfile(id);
+}
+
+export function listProfiles(): Profile[] {
+  return listOpsProfiles();
+}
+
 // ============================================================================
 // Threshold Helpers
 // ============================================================================
@@ -319,19 +454,3 @@ export function checkOpsThreshold(
 ): { exceeded: boolean; level?: 'warning' | 'critical' } {
   return exceedsThreshold(profile, metric as string, value);
 }
-
-// ============================================================================
-// Re-exports
-// ============================================================================
-
-export {
-  type Profile,
-  type ProfileConfig,
-  type Threshold,
-  baseProfile,
-  getProfile,
-  listProfiles,
-  mergeProfileWithOverlay,
-  validateProfile,
-  serializeProfile,
-} from '@autopilot/profiles';

@@ -138,7 +138,21 @@ export {
   type AlertCorrelationJobPayload,
   type RunbookGenerationJobPayload,
   type ReliabilityReportJobPayload,
+  type RequestBuilderOptions,
+  type JobBatch,
 } from './jobforge/index.js';
+
+export {
+  analyze,
+  validateBundle,
+  validateReportBundle,
+  renderReport,
+  writeReportMarkdown,
+  serializeBundle,
+  serializeReport,
+  type AnalyzeInput,
+  type AnalyzeOptions,
+} from './jobforge/integration.js';
 
 // ============================================================================
 // Profile Exports

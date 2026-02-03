@@ -1,11 +1,5 @@
 import {
   AlertSchema,
-  AlertSourceSchema,
-  AlertStatusSchema,
-  CorrelationRuleSchema,
-  CorrelatedAlertGroupSchema,
-  AlertCorrelationSchema,
-  SeveritySchema,
   generateId,
   type Alert,
   type AlertSource,
@@ -14,7 +8,7 @@ import {
   type AlertCorrelation,
   type Severity,
 } from '../contracts/index.js';
-import { getOpsProfile, type Profile } from '../profiles/index.js';
+import { type Profile } from '../profiles/index.js';
 
 /**
  * Alert Correlation Logic
@@ -170,8 +164,6 @@ export function correlateAlerts(
   rules: CorrelationRule[] = defaultCorrelationRules,
   profile?: Profile
 ): CorrelationResult {
-  const correlationWindow = profile?.config.thresholds.alert_correlation_window_minutes ?? { warning: 10, critical: 5, enabled: true };
-  const windowMinutes = correlationWindow.critical;
   const minForCorrelation = profile?.config.thresholds.min_alerts_for_correlation ?? { warning: 3, critical: 2, enabled: true };
   const minAlerts = minForCorrelation.critical;
   
@@ -235,9 +227,9 @@ export function correlateAlerts(
     }
     
     // Create groups that meet minimum threshold
-    for (const [key, groupAlerts] of ruleGroups) {
+    for (const groupAlerts of ruleGroups.values()) {
       if (groupAlerts.length >= (rule.min_alerts ?? minAlerts)) {
-        const group = createCorrelatedGroup(groupAlerts, rule, key);
+        const group = createCorrelatedGroup(groupAlerts, rule);
         groups.push(group);
         
         for (const alert of groupAlerts) {
@@ -299,8 +291,7 @@ function generateCorrelationKey(alert: Alert, rule: CorrelationRule): string {
 
 function createCorrelatedGroup(
   alerts: Alert[],
-  rule: CorrelationRule,
-  correlationKey: string
+  rule: CorrelationRule
 ): CorrelatedAlertGroup {
   const services = [...new Set(alerts.map(a => a.service))];
   const severities = alerts.map(a => a.severity);
@@ -433,7 +424,9 @@ export function sortAlertsBySeverity(alerts: Alert[]): Alert[] {
     opportunity: 3,
   };
   
-  return [...alerts].sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+  return [...alerts].sort(
+    (a, b) => severityOrder[a.severity as Severity] - severityOrder[b.severity as Severity]
+  );
 }
 
 export function getCriticalAlerts(alerts: Alert[]): Alert[] {
@@ -455,7 +448,8 @@ export function calculateAlertMetrics(alerts: Alert[]): {
   const bySource: Record<string, number> = {};
   
   for (const alert of alerts) {
-    bySeverity[alert.severity]++;
+    const severity = alert.severity as Severity;
+    bySeverity[severity]++;
     byService[alert.service] = (byService[alert.service] ?? 0) + 1;
     bySource[alert.source] = (bySource[alert.source] ?? 0) + 1;
   }

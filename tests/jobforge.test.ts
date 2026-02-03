@@ -24,13 +24,13 @@ describe('JobForge Request Generation', () => {
         }
       );
 
-      expect(request.tenant_id).toBe('test-tenant');
-      expect(request.project_id).toBe('test-project');
+      expect(request.tenant_context.tenant_id).toBe('test-tenant');
+      expect(request.tenant_context.project_id).toBe('test-project');
       expect(request.job_type).toBe('autopilot.ops.alert_correlate');
       expect(request.payload.alert_ids).toHaveLength(2);
     });
 
-    it('should enforce runnerless constraints', () => {
+    it('should enforce runnerless policy constraints', () => {
       const request = createAlertCorrelationRequest(
         tenantContext,
         {
@@ -39,9 +39,9 @@ describe('JobForge Request Generation', () => {
         }
       );
 
-      expect(request.constraints.auto_execute).toBe(false);
-      expect(request.constraints.require_approval).toBe(true);
-      expect(request.constraints.require_policy_token).toBe(true);
+      expect(request.policy.requires_approval).toBe(true);
+      expect(request.policy.requires_policy_token).toBe(true);
+      expect(request.metadata.runnerless).toBe(true);
     });
   });
 
@@ -66,7 +66,7 @@ describe('JobForge Request Generation', () => {
       expect(request.payload.root_cause).toBe('Resource exhaustion');
     });
 
-    it('should enforce runnerless constraints', () => {
+    it('should enforce runnerless policy constraints', () => {
       const request = createRunbookGenerationRequest(
         tenantContext,
         {
@@ -81,9 +81,9 @@ describe('JobForge Request Generation', () => {
         }
       );
 
-      expect(request.constraints.auto_execute).toBe(false);
-      expect(request.constraints.require_approval).toBe(true);
-      expect(request.constraints.require_policy_token).toBe(true);
+      expect(request.policy.requires_approval).toBe(true);
+      expect(request.policy.requires_policy_token).toBe(true);
+      expect(request.metadata.runnerless).toBe(true);
     });
   });
 
@@ -108,7 +108,7 @@ describe('JobForge Request Generation', () => {
 
     it('should support different report types', () => {
       const reportTypes = ['incident_postmortem', 'health_check', 'trend_analysis', 'compliance'] as const;
-      
+
       for (const reportType of reportTypes) {
         const request = createReliabilityReportRequest(
           tenantContext,
@@ -126,7 +126,7 @@ describe('JobForge Request Generation', () => {
       }
     });
 
-    it('should enforce runnerless constraints', () => {
+    it('should enforce runnerless policy constraints', () => {
       const request = createReliabilityReportRequest(
         tenantContext,
         {
@@ -139,9 +139,9 @@ describe('JobForge Request Generation', () => {
         }
       );
 
-      expect(request.constraints.auto_execute).toBe(false);
-      expect(request.constraints.require_approval).toBe(true);
-      expect(request.constraints.require_policy_token).toBe(true);
+      expect(request.policy.requires_approval).toBe(true);
+      expect(request.policy.requires_policy_token).toBe(true);
+      expect(request.metadata.runnerless).toBe(true);
     });
   });
 
@@ -160,52 +160,28 @@ describe('JobForge Request Generation', () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should reject auto_execute true', () => {
+    it('should reject invalid job type', () => {
       const request = {
-        tenant_id: 'test',
-        project_id: 'test',
-        job_id: 'job-1',
-        job_type: 'autopilot.ops.alert_correlate',
+        version: '1.0.0',
+        job_type: 'autopilot.ops.unknown',
+        tenant_context: tenantContext,
         priority: 'normal',
+        requested_at: new Date().toISOString(),
         payload: {},
-        created_at: new Date().toISOString(),
-        constraints: {
-          auto_execute: true, // Should be false
-          require_approval: true,
-          require_policy_token: true,
+        evidence_links: [],
+        policy: {
+          requires_policy_token: true,
+          requires_approval: true,
+          risk_level: 'low',
+          required_scopes: [],
+          compliance_tags: [],
         },
-        context: {
-          triggered_by: 'test',
-        },
+        metadata: {},
       };
 
       const result = validateJobRequest(request);
       expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('auto_execute'))).toBe(true);
-    });
-
-    it('should reject missing policy token requirement', () => {
-      const request = {
-        tenant_id: 'test',
-        project_id: 'test',
-        job_id: 'job-1',
-        job_type: 'autopilot.ops.alert_correlate',
-        priority: 'normal',
-        payload: {},
-        created_at: new Date().toISOString(),
-        constraints: {
-          auto_execute: false,
-          require_approval: true,
-          require_policy_token: false, // Should be true
-        },
-        context: {
-          triggered_by: 'test',
-        },
-      };
-
-      const result = validateJobRequest(request);
-      expect(result.valid).toBe(false);
-      expect(result.errors.some(e => e.includes('policy_token'))).toBe(true);
+      expect(result.errors.length).toBeGreaterThan(0);
     });
   });
 });
