@@ -15,8 +15,15 @@ import {
   HashSchema,
   EvidenceLinkSchema,
   FindingSchema,
+  CapabilityMetadataSchema,
+  HealthAuditInputSchema,
+  HealthAuditOutputSchema,
+  HealthAuditCapabilityMetadata,
   type EvidenceLink,
   type Finding,
+  type CapabilityMetadata,
+  type HealthAuditInput,
+  type HealthAuditOutput,
 } from './base.js';
 
 /**
@@ -37,11 +44,18 @@ export {
   EvidenceLinkSchema,
   FindingSchema,
   JobRequestSchema,
+  CapabilityMetadataSchema,
+  HealthAuditInputSchema,
+  HealthAuditOutputSchema,
+  HealthAuditCapabilityMetadata,
   type TenantContext,
   type Severity,
   type EvidenceLink,
   type Finding,
   type JobRequest,
+  type CapabilityMetadata,
+  type HealthAuditInput,
+  type HealthAuditOutput,
 };
 
 // ============================================================================
