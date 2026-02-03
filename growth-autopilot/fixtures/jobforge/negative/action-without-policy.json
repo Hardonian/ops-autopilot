@@ -1,0 +1,177 @@
+{
+  "canonicalization": {
+    "algorithm": "json-lexicographic",
+    "hash": "dfeeeed2d0f6cc079eb828ac21da259b027b0e4e5c2970a8a03f5e8feeb02d78",
+    "hash_algorithm": "sha256"
+  },
+  "created_at": "2000-01-01T00:00:00.000Z",
+  "dry_run": true,
+  "idempotency_keys": [
+    {
+      "idempotency_key": "b5f26715f120f594025b9beaa1a54256c4eac2a737cc77319966efe4a801be50",
+      "job_type": "autopilot.growth.seo_scan"
+    },
+    {
+      "idempotency_key": "c36b5d3a6243fcf8c665719b12ef02b9302fa61f4d9f296bd4408159cabddff8",
+      "job_type": "autopilot.growth.experiment_propose"
+    },
+    {
+      "idempotency_key": "5f1ec3fac6f6578f31c5a611ee34ee9783a3de8c093d88db140e754390f38131",
+      "job_type": "autopilot.growth.content_draft"
+    }
+  ],
+  "module_id": "growth",
+  "project_id": "project-demo",
+  "requests": [
+    {
+      "cost_estimate": {
+        "confidence": "medium",
+        "credits": 20
+      },
+      "evidence_links": [
+        {
+          "description": "landing_page draft with 1 variants",
+          "id": "draft-001",
+          "type": "content_draft"
+        },
+        {
+          "description": "Test CTA color",
+          "id": "exp-0-8beb15d3d0cc",
+          "type": "suggested_experiment"
+        }
+      ],
+      "expires_at": "2000-01-04T00:00:00.000Z",
+      "job_type": "autopilot.growth.content_draft",
+      "metadata": {
+        "idempotency_key": "5f1ec3fac6f6578f31c5a611ee34ee9783a3de8c093d88db140e754390f38131"
+      },
+      "payload": {
+        "constraints_respected": {
+          "brand_voice_matched": true,
+          "character_limits_met": true,
+          "prohibited_claims_checked": true
+        },
+        "content_type": "landing_page",
+        "goal": "Increase signups",
+        "llm_enhanced": false,
+        "profile_used": "growth-base",
+        "recommended_variant": "Variant A",
+        "target_audience": "Developers",
+        "variants_count": 1
+      },
+      "policy": {
+        "compliance_tags": [],
+        "required_scopes": [],
+        "requires_approval": false,
+        "requires_policy_token": false,
+        "risk_level": "low"
+      },
+      "priority": "normal",
+      "requested_at": "2000-01-01T00:00:00.000Z",
+      "tenant_context": {
+        "project_id": "project-demo",
+        "tenant_id": "tenant-demo"
+      },
+      "version": "1.0.0"
+    },
+    {
+      "cost_estimate": {
+        "confidence": "medium",
+        "credits": 35
+      },
+      "evidence_links": [
+        {
+          "description": "Funnel: Signup Funnel (100 users)",
+          "id": "funnel-50ca68f6b5f0",
+          "type": "funnel_metrics"
+        },
+        {
+          "description": "Shorten signup form: Shorter forms improve completion...",
+          "id": "proposal-001",
+          "type": "experiment_proposal"
+        }
+      ],
+      "expires_at": "2000-01-15T00:00:00.000Z",
+      "job_type": "autopilot.growth.experiment_propose",
+      "metadata": {
+        "idempotency_key": "c36b5d3a6243fcf8c665719b12ef02b9302fa61f4d9f296bd4408159cabddff8"
+      },
+      "payload": {
+        "biggest_drop_off_stage": "signup",
+        "funnel_name": "Signup Funnel",
+        "overall_conversion_rate": 40,
+        "proposals_count": 1,
+        "proposals_summary": [
+          {
+            "confidence": "medium",
+            "duration_days": 14,
+            "effort": "medium",
+            "expected_lift": 5,
+            "id": "proposal-001",
+            "name": "Shorten signup form",
+            "type": "ab_test"
+          }
+        ]
+      },
+      "policy": {
+        "compliance_tags": [],
+        "required_scopes": [],
+        "requires_approval": true,
+        "requires_policy_token": true,
+        "risk_level": "low"
+      },
+      "priority": "normal",
+      "requested_at": "2000-01-01T00:00:00.000Z",
+      "tenant_context": {
+        "project_id": "project-demo",
+        "tenant_id": "tenant-demo"
+      },
+      "version": "1.0.0"
+    },
+    {
+      "cost_estimate": {
+        "confidence": "medium",
+        "credits": 22
+      },
+      "evidence_links": [
+        {
+          "description": "missing_title: Missing <title>",
+          "id": "issue-82815afc72f4",
+          "type": "seo_issue"
+        }
+      ],
+      "expires_at": "2000-01-08T00:00:00.000Z",
+      "job_type": "autopilot.growth.seo_scan",
+      "metadata": {
+        "idempotency_key": "b5f26715f120f594025b9beaa1a54256c4eac2a737cc77319966efe4a801be50"
+      },
+      "payload": {
+        "findings_summary": {
+          "critical_issues": 1,
+          "health_score": 82,
+          "total_issues": 1,
+          "total_pages": 5
+        },
+        "source_path": "/site-export",
+        "source_type": "html_export"
+      },
+      "policy": {
+        "compliance_tags": [],
+        "required_scopes": [],
+        "requires_approval": true,
+        "requires_policy_token": true,
+        "risk_level": "low"
+      },
+      "priority": "normal",
+      "requested_at": "2000-01-01T00:00:00.000Z",
+      "tenant_context": {
+        "project_id": "project-demo",
+        "tenant_id": "tenant-demo"
+      },
+      "version": "1.0.0"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "tenant_id": "tenant-demo",
+  "trace_id": "trace-demo"
+}

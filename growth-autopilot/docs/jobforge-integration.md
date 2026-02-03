@@ -1,11 +1,11 @@
-# JobForge Integration (Ops Autopilot)
+# JobForge Integration (Growth Autopilot)
 
-Ops Autopilot is runnerless. It **never executes jobs**. It only emits JobForge-compatible request bundles and report envelopes for JobForge to validate and run.
+Growth Autopilot is runnerless. It **never executes jobs**. It only emits JobForge-compatible request bundles and report envelopes for JobForge to validate and run.
 
 ## CLI command JobForge should run
 
 ```bash
-ops-autopilot analyze \
+growth analyze \
   --inputs ./fixtures/jobforge/input.json \
   --tenant <tenant_id> \
   --project <project_id> \
@@ -46,15 +46,9 @@ The command writes the following files to `<output_dir>`:
 ## Safety boundaries
 
 - This module is **runnerless**. It only **emits** job requests and reports.
-- All action-like requests explicitly set `policy.requires_policy_token=true` and `policy.requires_approval=true`.
+- All JobForge requests require policy tokens and human approval before execution.
 - No secrets or PII are logged or serialized in output artifacts.
-
-## Determinism guarantees
-
-- `--stable-output` replaces non-deterministic timestamps and IDs with stable placeholders.
-- Output JSON is canonicalized with lexicographic key ordering.
-- `canonicalization.hash` is a SHA-256 of canonical JSON for repeatable verification.
 
 ## Compatibility maintenance
 
-The JobForge bundle schemas are maintained in `src/contracts/compat.ts`. They stay aligned with the canonical JobForge contracts by importing `@autopilot/contracts` and validating deterministic fixtures via `pnpm contracts:compat`.
+The JobForge bundle schemas are maintained in `src/contracts/compat.ts`. They are kept byte-for-byte aligned with the canonical JobForge contracts and validated via `pnpm contracts:compat` using deterministic fixtures.

@@ -29,13 +29,19 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "runnerless:audit": "echo 'Install @autopilot/audit-cli to enable: pnpm add -D @autopilot/audit-cli'",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "verify:fast": "pnpm lint && pnpm typecheck && pnpm build",
+    "verify:full": "pnpm verify:fast && pnpm test",
+    "docs:verify": "pnpm build && node ./scripts/docs-verify.js",
+    "contracts:compat": "pnpm build && node ./scripts/contracts-compat.js",
+    "fixtures:export": "pnpm build && node ./scripts/fixtures-export.js"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "packageManager": "pnpm@9.0.0",
   "dependencies": {
+    "@autopilot/contracts": "file:../autopilot-suite/packages/contracts",
     "zod": "^3.23.8",
     "commander": "^12.1.0",
     "cheerio": "^1.0.0-rc.12",

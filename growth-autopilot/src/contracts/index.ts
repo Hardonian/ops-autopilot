@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { JobRequestSchema, type JobRequest, PrioritySchema, type Priority } from '@autopilot/contracts';
 
 /**
  * Tenant and project identifiers for multi-tenancy safety
@@ -223,32 +224,13 @@ export const ContentDraftSchema = z.object({
 export type ContentDraft = z.infer<typeof ContentDraftSchema>;
 
 /**
- * JobForge Request schemas
+ * JobForge Request schemas (canonical)
  */
-export const JobPrioritySchema = z.enum(['low', 'normal', 'high', 'critical']);
+export const JobPrioritySchema = PrioritySchema;
+export type JobPriority = Priority;
 
-export type JobPriority = z.infer<typeof JobPrioritySchema>;
-
-export const JobForgeRequestSchema = z.object({
-  job_type: z.enum([
-    'autopilot.growth.seo_scan',
-    'autopilot.growth.experiment_propose',
-    'autopilot.growth.content_draft',
-  ]),
-  tenant_context: TenantContextSchema,
-  priority: JobPrioritySchema,
-  requested_at: z.string().datetime(),
-  payload: z.record(z.unknown()),
-  evidence_links: z.array(z.object({
-    type: z.string(),
-    id: z.string(),
-    description: z.string(),
-  })),
-  estimated_cost_credits: z.number().int().nonnegative().optional(),
-  expires_at: z.string().datetime().optional(),
-});
-
-export type JobForgeRequest = z.infer<typeof JobForgeRequestSchema>;
+export const JobForgeRequestSchema = JobRequestSchema;
+export type JobForgeRequest = JobRequest;
 
 /**
  * Profile schemas

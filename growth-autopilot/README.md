@@ -342,7 +342,26 @@ Each profile includes:
 
 ## JobForge Integration
 
-When you use the `--jobforge` flag, the CLI generates a JobForge request file (`.job.json`) alongside your output. This request can be submitted to JobForge for execution:
+Growth Autopilot provides a JobForge-compatible **analyze** surface that emits deterministic request bundles and report envelopes. The module never executes jobs; it only emits request bundles for JobForge to validate and run.
+
+```bash
+growth analyze \
+  --inputs ./fixtures/jobforge/input.json \
+  --tenant <tenant_id> \
+  --project <project_id> \
+  --trace <trace_id> \
+  --out ./out
+```
+
+Add `--stable-output` when generating deterministic fixtures or docs.
+
+The command writes:
+
+- `request-bundle.json` (JobRequestBundle, schema_version `1.0.0`)
+- `report.json` (ReportEnvelopeBundle, schema_version `1.0.0`)
+- `report.md` (Markdown rendering)
+
+When you use the `--jobforge` flag on other commands, the CLI generates a JobForge request file (`.job.json`) alongside your output. This request can be submitted to JobForge for execution:
 
 ```bash
 # Generate JobForge request
@@ -354,6 +373,8 @@ growth seo-scan --path ./site --output findings.json --jobforge
 ```
 
 **Important**: This tool does not auto-execute jobs. It generates requests. JobForge (or your job runner of choice) handles execution.
+
+See [docs/jobforge-integration.md](./docs/jobforge-integration.md) for bundle validation and ingestion guidance.
 
 ## Examples
 

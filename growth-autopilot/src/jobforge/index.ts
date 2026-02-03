@@ -6,5 +6,16 @@ export {
   batchJobRequests,
   validateJobRequest,
   createMockJobResponse,
-  type JobForgeConfig 
+  type JobForgeConfig,
+  type JobForgeRequestOptions
 } from './client.js';
+
+export {
+  analyze,
+  renderReport,
+  serializeBundle,
+  serializeReport,
+  validateBundle,
+  validateReportBundle,
+  writeReportMarkdown,
+} from './integration.js';

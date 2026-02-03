@@ -1,0 +1,584 @@
+{
+  "canonicalization": {
+    "algorithm": "json-lexicographic",
+    "hash": "8bc82348de84d32813fa00578abca018c7506202b6e88175e8a517d17443f9b2",
+    "hash_algorithm": "sha256"
+  },
+  "created_at": "2000-01-01T00:00:00.000Z",
+  "dry_run": true,
+  "idempotency_keys": [
+    {
+      "idempotency_key": "b5f26715f120f594025b9beaa1a54256c4eac2a737cc77319966efe4a801be50",
+      "job_type": "autopilot.growth.seo_scan"
+    },
+    {
+      "idempotency_key": "c36b5d3a6243fcf8c665719b12ef02b9302fa61f4d9f296bd4408159cabddff8",
+      "job_type": "autopilot.growth.experiment_propose"
+    },
+    {
+      "idempotency_key": "5f1ec3fac6f6578f31c5a611ee34ee9783a3de8c093d88db140e754390f38131",
+      "job_type": "autopilot.growth.content_draft"
+    }
+  ],
+  "module_id": "growth",
+  "project_id": "project-demo",
+  "report": {
+    "evidence": [
+      {
+        "collected_at": "2000-01-01T00:00:00.000Z",
+        "description": "1 SEO issues across 5 pages",
+        "id": "ev-d4556bc7b4ae",
+        "raw_value": {
+          "total_issues": 1,
+          "total_pages": 5
+        },
+        "severity": "warning",
+        "source": "growth-autopilot",
+        "type": "signal"
+      },
+      {
+        "collected_at": "2000-01-01T00:00:00.000Z",
+        "description": "Funnel Signup Funnel conversion 40.0%",
+        "id": "ev-a8e97c81271b",
+        "raw_value": {
+          "total_users_completed": 40,
+          "total_users_entered": 100
+        },
+        "severity": "info",
+        "source": "growth-autopilot",
+        "type": "signal"
+      },
+      {
+        "collected_at": "2000-01-01T00:00:00.000Z",
+        "description": "1 experiment proposals generated",
+        "id": "ev-69b08ed46b77",
+        "raw_value": {
+          "proposals": 1
+        },
+        "severity": "opportunity",
+        "source": "growth-autopilot",
+        "type": "signal"
+      },
+      {
+        "collected_at": "2000-01-01T00:00:00.000Z",
+        "description": "Drafted 1 content variants",
+        "id": "ev-d2c5b283dbe3",
+        "raw_value": {
+          "variants": 1
+        },
+        "severity": "info",
+        "source": "growth-autopilot",
+        "type": "signal"
+      }
+    ],
+    "findings": {
+      "content_variants": 1,
+      "experiment_proposals": 1,
+      "funnel_name": "Signup Funnel",
+      "seo_issues": 1
+    },
+    "generated_at": "2000-01-01T00:00:00.000Z",
+    "job_requests": [
+      {
+        "cost_estimate": {
+          "confidence": "medium",
+          "credits": 22
+        },
+        "evidence_links": [
+          {
+            "description": "missing_title: Missing <title>",
+            "id": "issue-82815afc72f4",
+            "type": "seo_issue"
+          }
+        ],
+        "expires_at": "2000-01-08T00:00:00.000Z",
+        "job_type": "autopilot.growth.seo_scan",
+        "metadata": {},
+        "payload": {
+          "findings_summary": {
+            "critical_issues": 1,
+            "health_score": 82,
+            "total_issues": 1,
+            "total_pages": 5
+          },
+          "source_path": "/site-export",
+          "source_type": "html_export"
+        },
+        "policy": {
+          "compliance_tags": [],
+          "required_scopes": [],
+          "requires_approval": true,
+          "requires_policy_token": true,
+          "risk_level": "low"
+        },
+        "priority": "normal",
+        "requested_at": "2000-01-01T00:00:00.000Z",
+        "tenant_context": {
+          "project_id": "project-demo",
+          "tenant_id": "tenant-demo"
+        },
+        "version": "1.0.0"
+      },
+      {
+        "cost_estimate": {
+          "confidence": "medium",
+          "credits": 35
+        },
+        "evidence_links": [
+          {
+            "description": "Funnel: Signup Funnel (100 users)",
+            "id": "funnel-50ca68f6b5f0",
+            "type": "funnel_metrics"
+          },
+          {
+            "description": "Shorten signup form: Shorter forms improve completion...",
+            "id": "proposal-001",
+            "type": "experiment_proposal"
+          }
+        ],
+        "expires_at": "2000-01-15T00:00:00.000Z",
+        "job_type": "autopilot.growth.experiment_propose",
+        "metadata": {},
+        "payload": {
+          "biggest_drop_off_stage": "signup",
+          "funnel_name": "Signup Funnel",
+          "overall_conversion_rate": 40,
+          "proposals_count": 1,
+          "proposals_summary": [
+            {
+              "confidence": "medium",
+              "duration_days": 14,
+              "effort": "medium",
+              "expected_lift": 5,
+              "id": "proposal-001",
+              "name": "Shorten signup form",
+              "type": "ab_test"
+            }
+          ]
+        },
+        "policy": {
+          "compliance_tags": [],
+          "required_scopes": [],
+          "requires_approval": true,
+          "requires_policy_token": true,
+          "risk_level": "low"
+        },
+        "priority": "normal",
+        "requested_at": "2000-01-01T00:00:00.000Z",
+        "tenant_context": {
+          "project_id": "project-demo",
+          "tenant_id": "tenant-demo"
+        },
+        "version": "1.0.0"
+      },
+      {
+        "cost_estimate": {
+          "confidence": "medium",
+          "credits": 20
+        },
+        "evidence_links": [
+          {
+            "description": "landing_page draft with 1 variants",
+            "id": "draft-001",
+            "type": "content_draft"
+          },
+          {
+            "description": "Test CTA color",
+            "id": "exp-0-8beb15d3d0cc",
+            "type": "suggested_experiment"
+          }
+        ],
+        "expires_at": "2000-01-04T00:00:00.000Z",
+        "job_type": "autopilot.growth.content_draft",
+        "metadata": {},
+        "payload": {
+          "constraints_respected": {
+            "brand_voice_matched": true,
+            "character_limits_met": true,
+            "prohibited_claims_checked": true
+          },
+          "content_type": "landing_page",
+          "goal": "Increase signups",
+          "llm_enhanced": false,
+          "profile_used": "growth-base",
+          "recommended_variant": "Variant A",
+          "target_audience": "Developers",
+          "variants_count": 1
+        },
+        "policy": {
+          "compliance_tags": [],
+          "required_scopes": [],
+          "requires_approval": true,
+          "requires_policy_token": true,
+          "risk_level": "low"
+        },
+        "priority": "normal",
+        "requested_at": "2000-01-01T00:00:00.000Z",
+        "tenant_context": {
+          "project_id": "project-demo",
+          "tenant_id": "tenant-demo"
+        },
+        "version": "1.0.0"
+      }
+    ],
+    "metadata": {
+      "correlation_id": "trace-demo",
+      "profile_id": "growth-base"
+    },
+    "module": {
+      "name": "growth-autopilot",
+      "version": "0.1.0"
+    },
+    "recommendations": [
+      {
+        "action": "request_job",
+        "description": "Submit autopilot.growth.seo_scan via JobForge for execution.",
+        "evidence": [
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "1 SEO issues across 5 pages",
+            "id": "ev-d4556bc7b4ae",
+            "raw_value": {
+              "total_issues": 1,
+              "total_pages": 5
+            },
+            "severity": "warning",
+            "source": "growth-autopilot",
+            "type": "signal"
+          },
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "Funnel Signup Funnel conversion 40.0%",
+            "id": "ev-a8e97c81271b",
+            "raw_value": {
+              "total_users_completed": 40,
+              "total_users_entered": 100
+            },
+            "severity": "info",
+            "source": "growth-autopilot",
+            "type": "signal"
+          },
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "1 experiment proposals generated",
+            "id": "ev-69b08ed46b77",
+            "raw_value": {
+              "proposals": 1
+            },
+            "severity": "opportunity",
+            "source": "growth-autopilot",
+            "type": "signal"
+          },
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "Drafted 1 content variants",
+            "id": "ev-d2c5b283dbe3",
+            "raw_value": {
+              "variants": 1
+            },
+            "severity": "info",
+            "source": "growth-autopilot",
+            "type": "signal"
+          }
+        ],
+        "id": "rec-44cc4c4c1019",
+        "job_request": {
+          "cost_estimate": {
+            "confidence": "medium",
+            "credits": 22
+          },
+          "evidence_links": [
+            {
+              "description": "missing_title: Missing <title>",
+              "id": "issue-82815afc72f4",
+              "type": "seo_issue"
+            }
+          ],
+          "expires_at": "2000-01-08T00:00:00.000Z",
+          "job_type": "autopilot.growth.seo_scan",
+          "metadata": {},
+          "payload": {
+            "findings_summary": {
+              "critical_issues": 1,
+              "health_score": 82,
+              "total_issues": 1,
+              "total_pages": 5
+            },
+            "source_path": "/site-export",
+            "source_type": "html_export"
+          },
+          "policy": {
+            "compliance_tags": [],
+            "required_scopes": [],
+            "requires_approval": true,
+            "requires_policy_token": true,
+            "risk_level": "low"
+          },
+          "priority": "normal",
+          "requested_at": "2000-01-01T00:00:00.000Z",
+          "tenant_context": {
+            "project_id": "project-demo",
+            "tenant_id": "tenant-demo"
+          },
+          "version": "1.0.0"
+        },
+        "requires_review": true,
+        "reviewer_roles": [
+          "growth-lead",
+          "marketing-lead"
+        ],
+        "severity": "warning",
+        "title": "Execute autopilot.growth.seo_scan"
+      },
+      {
+        "action": "request_job",
+        "description": "Submit autopilot.growth.experiment_propose via JobForge for execution.",
+        "evidence": [
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "1 SEO issues across 5 pages",
+            "id": "ev-d4556bc7b4ae",
+            "raw_value": {
+              "total_issues": 1,
+              "total_pages": 5
+            },
+            "severity": "warning",
+            "source": "growth-autopilot",
+            "type": "signal"
+          },
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "Funnel Signup Funnel conversion 40.0%",
+            "id": "ev-a8e97c81271b",
+            "raw_value": {
+              "total_users_completed": 40,
+              "total_users_entered": 100
+            },
+            "severity": "info",
+            "source": "growth-autopilot",
+            "type": "signal"
+          },
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "1 experiment proposals generated",
+            "id": "ev-69b08ed46b77",
+            "raw_value": {
+              "proposals": 1
+            },
+            "severity": "opportunity",
+            "source": "growth-autopilot",
+            "type": "signal"
+          },
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "Drafted 1 content variants",
+            "id": "ev-d2c5b283dbe3",
+            "raw_value": {
+              "variants": 1
+            },
+            "severity": "info",
+            "source": "growth-autopilot",
+            "type": "signal"
+          }
+        ],
+        "id": "rec-2ae9adedcb17",
+        "job_request": {
+          "cost_estimate": {
+            "confidence": "medium",
+            "credits": 35
+          },
+          "evidence_links": [
+            {
+              "description": "Funnel: Signup Funnel (100 users)",
+              "id": "funnel-50ca68f6b5f0",
+              "type": "funnel_metrics"
+            },
+            {
+              "description": "Shorten signup form: Shorter forms improve completion...",
+              "id": "proposal-001",
+              "type": "experiment_proposal"
+            }
+          ],
+          "expires_at": "2000-01-15T00:00:00.000Z",
+          "job_type": "autopilot.growth.experiment_propose",
+          "metadata": {},
+          "payload": {
+            "biggest_drop_off_stage": "signup",
+            "funnel_name": "Signup Funnel",
+            "overall_conversion_rate": 40,
+            "proposals_count": 1,
+            "proposals_summary": [
+              {
+                "confidence": "medium",
+                "duration_days": 14,
+                "effort": "medium",
+                "expected_lift": 5,
+                "id": "proposal-001",
+                "name": "Shorten signup form",
+                "type": "ab_test"
+              }
+            ]
+          },
+          "policy": {
+            "compliance_tags": [],
+            "required_scopes": [],
+            "requires_approval": true,
+            "requires_policy_token": true,
+            "risk_level": "low"
+          },
+          "priority": "normal",
+          "requested_at": "2000-01-01T00:00:00.000Z",
+          "tenant_context": {
+            "project_id": "project-demo",
+            "tenant_id": "tenant-demo"
+          },
+          "version": "1.0.0"
+        },
+        "requires_review": true,
+        "reviewer_roles": [
+          "growth-lead",
+          "marketing-lead"
+        ],
+        "severity": "warning",
+        "title": "Execute autopilot.growth.experiment_propose"
+      },
+      {
+        "action": "request_job",
+        "description": "Submit autopilot.growth.content_draft via JobForge for execution.",
+        "evidence": [
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "1 SEO issues across 5 pages",
+            "id": "ev-d4556bc7b4ae",
+            "raw_value": {
+              "total_issues": 1,
+              "total_pages": 5
+            },
+            "severity": "warning",
+            "source": "growth-autopilot",
+            "type": "signal"
+          },
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "Funnel Signup Funnel conversion 40.0%",
+            "id": "ev-a8e97c81271b",
+            "raw_value": {
+              "total_users_completed": 40,
+              "total_users_entered": 100
+            },
+            "severity": "info",
+            "source": "growth-autopilot",
+            "type": "signal"
+          },
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "1 experiment proposals generated",
+            "id": "ev-69b08ed46b77",
+            "raw_value": {
+              "proposals": 1
+            },
+            "severity": "opportunity",
+            "source": "growth-autopilot",
+            "type": "signal"
+          },
+          {
+            "collected_at": "2000-01-01T00:00:00.000Z",
+            "description": "Drafted 1 content variants",
+            "id": "ev-d2c5b283dbe3",
+            "raw_value": {
+              "variants": 1
+            },
+            "severity": "info",
+            "source": "growth-autopilot",
+            "type": "signal"
+          }
+        ],
+        "id": "rec-b26f821e77b4",
+        "job_request": {
+          "cost_estimate": {
+            "confidence": "medium",
+            "credits": 20
+          },
+          "evidence_links": [
+            {
+              "description": "landing_page draft with 1 variants",
+              "id": "draft-001",
+              "type": "content_draft"
+            },
+            {
+              "description": "Test CTA color",
+              "id": "exp-0-8beb15d3d0cc",
+              "type": "suggested_experiment"
+            }
+          ],
+          "expires_at": "2000-01-04T00:00:00.000Z",
+          "job_type": "autopilot.growth.content_draft",
+          "metadata": {},
+          "payload": {
+            "constraints_respected": {
+              "brand_voice_matched": true,
+              "character_limits_met": true,
+              "prohibited_claims_checked": true
+            },
+            "content_type": "landing_page",
+            "goal": "Increase signups",
+            "llm_enhanced": false,
+            "profile_used": "growth-base",
+            "recommended_variant": "Variant A",
+            "target_audience": "Developers",
+            "variants_count": 1
+          },
+          "policy": {
+            "compliance_tags": [],
+            "required_scopes": [],
+            "requires_approval": true,
+            "requires_policy_token": true,
+            "risk_level": "low"
+          },
+          "priority": "normal",
+          "requested_at": "2000-01-01T00:00:00.000Z",
+          "tenant_context": {
+            "project_id": "project-demo",
+            "tenant_id": "tenant-demo"
+          },
+          "version": "1.0.0"
+        },
+        "requires_review": true,
+        "reviewer_roles": [
+          "growth-lead",
+          "marketing-lead"
+        ],
+        "severity": "warning",
+        "title": "Execute autopilot.growth.content_draft"
+      }
+    ],
+    "redaction_hints": [
+      {
+        "field": "findings",
+        "reason": "Aggregate counts only; raw marketing data excluded.",
+        "severity": "low"
+      }
+    ],
+    "report_id": "00000000-0000-0000-0000-000000000000",
+    "report_type": "growth.seo_audit",
+    "summary": {
+      "actionable_count": 3,
+      "by_severity": {
+        "critical": 0,
+        "info": 2,
+        "opportunity": 1,
+        "warning": 1
+      },
+      "total_findings": 4,
+      "total_recommendations": 3
+    },
+    "tenant_context": {
+      "project_id": "project-demo",
+      "tenant_id": "tenant-demo"
+    },
+    "version": "1.0.0"
+  },
+  "schema_version": "1.0.0",
+  "tenant_id": "tenant-demo",
+  "trace_id": "trace-demo"
+}

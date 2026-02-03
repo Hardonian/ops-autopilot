@@ -89,6 +89,7 @@ Ops Autopilot provides a first-class JobForge integration surface that emits:
 - `report.md` (Markdown rendering)
 
 The module remains runnerless; it only generates requests and reports.
+`schema_version` is pinned to `1.0.0`, and `--stable-output` ensures deterministic output for fixtures and documentation.
 
 ```bash
 ops-autopilot analyze \

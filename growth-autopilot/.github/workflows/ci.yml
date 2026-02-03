@@ -70,6 +70,12 @@ jobs:
       - name: Run tests
         run: pnpm test
 
+      - name: Verify JobForge contracts compatibility
+        run: pnpm contracts:compat
+
+      - name: Verify docs outputs
+        run: pnpm docs:verify
+
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
