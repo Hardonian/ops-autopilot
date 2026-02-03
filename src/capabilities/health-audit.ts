@@ -244,6 +244,10 @@ async function performAudit(
   const metrics: Record<string, number> = {};
   const recommendations: HealthAuditOutput['recommendations'] = [];
 
+  // Track if we have any dependency failures that should trigger retry
+  let hasDependencyFailure = false;
+  let dependencyError: Error | undefined;
+
   // Batch service health checks for better I/O efficiency
   const healthResults = await Promise.allSettled(
     services.map(async service => {
@@ -254,8 +258,13 @@ async function performAudit(
 
   for (const result of healthResults) {
     if (result.status === 'rejected') {
-      // Propagate the error to trigger retry logic
-      throw result.reason;
+      // Track dependency failure for potential retry, but continue auditing other services
+      hasDependencyFailure = true;
+      if (!dependencyError) {
+        dependencyError =
+          result.reason instanceof Error ? result.reason : new Error(String(result.reason));
+      }
+      continue;
     }
 
     const { service, health } = result.value;
@@ -284,6 +293,11 @@ async function performAudit(
         action: `Check ${service} logs and metrics`,
       });
     }
+  }
+
+  // If all services failed due to dependency issues, throw to trigger retry
+  if (hasDependencyFailure && servicesAudited.length === 0 && dependencyError) {
+    throw dependencyError;
   }
 
   // Fetch metrics only for successfully audited services with include_metrics
