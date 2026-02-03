@@ -22,7 +22,7 @@ jobs:
         with:
           version: 9
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Verify fast
         run: pnpm verify:fast
       - name: Verify JobForge contracts compatibility
@@ -43,7 +43,7 @@ jobs:
         with:
           version: 9
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Verify full
         run: pnpm verify:full
       - name: Verify JobForge contracts compatibility

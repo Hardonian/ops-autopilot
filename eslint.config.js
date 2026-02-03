@@ -1,18 +1,13 @@
 import js from '@eslint/js';
-import tsParser from '@typescript-eslint/parser';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
+import tseslint from 'typescript-eslint';
 
-/** @type {import('eslint').Linter.FlatConfig[]} */
-export default [
+/** @type {import('eslint').Linter.Config[]} */
+export default tseslint.config(
   js.configs.recommended,
+  tseslint.configs.recommended,
+  tseslint.configs.strict,
   {
-    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        project: './tsconfig.json',
-        tsconfigRootDir: '.',
-      },
       globals: {
         console: 'readonly',
         process: 'readonly',
@@ -23,20 +18,18 @@ export default [
         clearInterval: 'readonly',
       },
     },
-    plugins: {
-      '@typescript-eslint': tsPlugin,
-    },
     rules: {
-      ...tsPlugin.configs.recommended.rules,
-      ...tsPlugin.configs.strict.rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
       'prefer-const': 'error',
       'no-console': 'off',
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', '*.config.js'],
-  },
-];
+    ignores: ['dist/', 'node_modules/', '*.config.js', '*.config.ts'],
+  }
+);

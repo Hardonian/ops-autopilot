@@ -1,0 +1,4 @@
+packages:
+  - '.'
+  - 'autopilot-suite/packages/*'
+  - 'autopilot-suite/apps/*'
