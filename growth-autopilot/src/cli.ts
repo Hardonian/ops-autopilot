@@ -8,7 +8,7 @@ import { scanSEO, type SEOScannerConfig } from './seo/index.js';
 import { analyzeFunnel, loadEventsFromFile, detectFunnelPatterns, type FunnelConfig } from './funnel/index.js';
 import { proposeExperiments, rankProposals, type ProposerConfig } from './experiments/index.js';
 import { draftContent, type DrafterConfig } from './content/index.js';
-import { createSEOScanJob, createExperimentJob, createContentDraftJob, serializeJobRequest } from './jobforge/index.js';
+import { createSEOScanJob, createExperimentJob, createContentDraftJob, serializeJobRequest, analyze, serializeBundle, serializeReport, writeReportMarkdown } from './jobforge/index.js';
 import { getProfile, listProfiles } from './profiles/index.js';
 import type { TenantContext } from './contracts/index.js';
 
@@ -336,6 +336,43 @@ program
         await fs.writeFile(jobFile, serializeJobRequest(jobRequest));
         console.log(chalk.green(`✓ JobForge request saved to ${jobFile}`));
       }
+    } catch (error) {
+      console.error(chalk.red(`\n✗ Error: ${error instanceof Error ? error.message : String(error)}`));
+      process.exit(1);
+    }
+  });
+
+// JobForge integration command
+program
+  .command('analyze')
+  .description('Generate JobForge-compatible request bundle + report envelope')
+  .requiredOption('--inputs <file>', 'Path to JobForge analyze input JSON')
+  .requiredOption('--tenant <id>', 'Tenant ID')
+  .requiredOption('--project <id>', 'Project ID')
+  .requiredOption('--trace <id>', 'Trace ID')
+  .requiredOption('--out <dir>', 'Output directory')
+  .option('--stable-output', 'Emit deterministic output fixtures')
+  .action(async (options) => {
+    try {
+      const inputRaw = await fs.readFile(options.inputs, 'utf-8');
+      const input = JSON.parse(inputRaw);
+
+      const result = analyze(
+        {
+          ...input,
+          tenant_id: options.tenant,
+          project_id: options.project,
+          trace_id: options.trace,
+        },
+        { stableOutput: Boolean(options.stableOutput) }
+      );
+
+      await fs.mkdir(options.out, { recursive: true });
+      await fs.writeFile(path.join(options.out, 'request-bundle.json'), serializeBundle(result.jobRequestBundle));
+      await fs.writeFile(path.join(options.out, 'report.json'), serializeReport(result.reportEnvelope));
+      await fs.writeFile(path.join(options.out, 'report.md'), writeReportMarkdown(result.reportEnvelope));
+
+      console.log(chalk.green(`✓ Wrote JobForge outputs to ${options.out}`));
     } catch (error) {
       console.error(chalk.red(`\n✗ Error: ${error instanceof Error ? error.message : String(error)}`));
       process.exit(1);

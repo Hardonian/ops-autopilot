@@ -67,8 +67,10 @@ describe('JobForge Integration', () => {
       expect(job.priority).toBe('normal');
       expect(job.payload.findings_summary).toBeDefined();
       expect(job.evidence_links.length).toBeGreaterThan(0);
-      expect(job.estimated_cost_credits).toBeGreaterThan(0);
+      expect(job.cost_estimate?.credits).toBeGreaterThan(0);
       expect(job.expires_at).toBeDefined();
+      expect(job.policy.requires_policy_token).toBe(true);
+      expect(job.policy.requires_approval).toBe(true);
     });
 
     it('includes correct job type', () => {
@@ -155,6 +157,8 @@ describe('JobForge Integration', () => {
       expect(job.payload.proposals_count).toBeGreaterThan(0);
       expect(job.payload.proposals_summary).toBeDefined();
       expect(job.evidence_links.length).toBeGreaterThan(0);
+      expect(job.policy.requires_policy_token).toBe(true);
+      expect(job.policy.requires_approval).toBe(true);
     });
 
     it('includes proposal summaries in payload', () => {
@@ -236,6 +240,8 @@ describe('JobForge Integration', () => {
       expect(job.payload.content_type).toBe('landing_page');
       expect(job.payload.variants_count).toBeGreaterThan(0);
       expect(job.evidence_links.length).toBeGreaterThan(0);
+      expect(job.policy.requires_policy_token).toBe(true);
+      expect(job.policy.requires_approval).toBe(true);
     });
 
     it('indicates if content was LLM-enhanced', () => {
@@ -340,7 +346,7 @@ describe('JobForge Integration', () => {
 
       expect(batch.batch_id).toBeDefined();
       expect(batch.requests.length).toBe(2);
-      expect(batch.total_cost).toBeGreaterThan(0);
+      expect(batch.total_cost?.credits).toBeGreaterThan(0);
     });
 
     it('calculates total cost correctly', () => {
@@ -392,8 +398,8 @@ describe('JobForge Integration', () => {
 
       const batch = batchJobRequests([job1, job2]);
 
-      expect(batch.total_cost).toBe(
-        (job1.estimated_cost_credits ?? 0) + (job2.estimated_cost_credits ?? 0)
+      expect(batch.total_cost?.credits).toBe(
+        (job1.cost_estimate?.credits ?? 0) + (job2.cost_estimate?.credits ?? 0)
       );
     });
   });

@@ -36,7 +36,9 @@
     "cli": "node ./dist/cli.js",
     "verify:fast": "pnpm lint && pnpm typecheck && pnpm build",
     "verify:full": "pnpm verify:fast && pnpm test",
-    "docs:verify": "pnpm build && node ./scripts/docs-verify.js"
+    "docs:verify": "pnpm build && node ./scripts/docs-verify.js",
+    "contracts:compat": "pnpm build && node ./scripts/contracts-compat.js",
+    "fixtures:export": "pnpm build && node ./scripts/fixtures-export.js"
   },
   "dependencies": {
     "@autopilot/contracts": "file:./autopilot-suite/packages/contracts",

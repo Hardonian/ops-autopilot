@@ -25,6 +25,8 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       - name: Verify fast
         run: pnpm verify:fast
+      - name: Verify JobForge contracts compatibility
+        run: pnpm contracts:compat
 
   verify-full:
     if: github.event_name == 'push'
@@ -44,5 +46,7 @@ jobs:
         run: pnpm install --no-frozen-lockfile
       - name: Verify full
         run: pnpm verify:full
+      - name: Verify JobForge contracts compatibility
+        run: pnpm contracts:compat
       - name: Verify docs
         run: pnpm docs:verify
