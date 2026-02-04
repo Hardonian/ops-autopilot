@@ -230,6 +230,7 @@ describe('Contract Schema Compliance', () => {
           completed_at: '2026-01-01T00:01:00Z',
           attempts: 1,
           execution_time_ms: 60000,
+          cost_usd_estimate: 0.25,
         },
         idempotency_key: 'test-key',
       };
@@ -266,6 +267,7 @@ describe('Contract Schema Compliance', () => {
           completed_at: '2026-01-01T00:01:00Z',
           attempts: 2,
           execution_time_ms: 60000,
+          cost_usd_estimate: 0.4,
         },
       };
 
@@ -286,6 +288,7 @@ describe('Contract Schema Compliance', () => {
           completed_at: '2026-01-01T00:01:00Z',
           attempts: 1,
           execution_time_ms: 60000,
+          cost_usd_estimate: 0.1,
         },
       };
 

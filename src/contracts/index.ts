@@ -19,12 +19,23 @@ import {
   HealthAuditInputSchema,
   HealthAuditOutputSchema,
   HealthAuditCapabilityMetadata,
+  MAX_SERVICES_PER_AUDIT,
   type EvidenceLink,
   type Finding,
   type CapabilityMetadata,
   type HealthAuditInput,
   type HealthAuditOutput,
 } from './base.js';
+import {
+  RunnerDefinitionSchema,
+  RunnerExecutionGuaranteeSchema,
+  RunnerMetricDefinitionSchema,
+  RunnerCostPolicySchema,
+  type RunnerDefinition,
+  type RunnerExecutionGuarantee,
+  type RunnerMetricDefinition,
+  type RunnerCostPolicy,
+} from './runner.js';
 
 /**
  * Ops Autopilot Contracts
@@ -48,6 +59,11 @@ export {
   HealthAuditInputSchema,
   HealthAuditOutputSchema,
   HealthAuditCapabilityMetadata,
+  MAX_SERVICES_PER_AUDIT,
+  RunnerDefinitionSchema,
+  RunnerExecutionGuaranteeSchema,
+  RunnerMetricDefinitionSchema,
+  RunnerCostPolicySchema,
   type TenantContext,
   type Severity,
   type EvidenceLink,
@@ -56,6 +72,10 @@ export {
   type CapabilityMetadata,
   type HealthAuditInput,
   type HealthAuditOutput,
+  type RunnerDefinition,
+  type RunnerExecutionGuarantee,
+  type RunnerMetricDefinition,
+  type RunnerCostPolicy,
 };
 
 // ============================================================================

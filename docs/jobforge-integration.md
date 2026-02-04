@@ -47,6 +47,7 @@ The command writes the following files to `<output_dir>`:
 
 - This module is **runnerless**. It only **emits** job requests and reports.
 - All action-like requests explicitly set `policy.requires_policy_token=true` and `policy.requires_approval=true`.
+- FinOps metadata is attached to `request.metadata.finops` for cost attribution and caps.
 - No secrets or PII are logged or serialized in output artifacts.
 
 ## Determinism guarantees
