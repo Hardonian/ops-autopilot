@@ -31,11 +31,30 @@ export interface RunnerlessRequestOptions {
   traceId?: string;
   evidenceLinks?: Array<{ type: string; id: string; description: string }>;
   riskLevel?: 'low' | 'medium' | 'high' | 'critical';
+  finops?: FinOpsMetadata;
 }
 
 export type RequestBuilderOptions = RunnerlessRequestOptions;
 
 export type JobBatch = ReturnType<typeof batchJobRequests>;
+
+export interface FinOpsMetadata {
+  cost_center: string;
+  budget_usd: number;
+  max_cost_usd: number;
+  estimated_cost_usd: number;
+  owner: string;
+}
+
+export const DEFAULT_FINOPS_METADATA: FinOpsMetadata = {
+  cost_center: 'ops-reliability',
+  budget_usd: 50,
+  max_cost_usd: 2,
+  estimated_cost_usd: 0.5,
+  owner: 'ops-finops',
+};
+
+export const MAX_JOB_REQUESTS_PER_BATCH = 25;
 
 function buildRunnerlessJobRequest(
   tenantContext: TenantContext,
@@ -51,6 +70,8 @@ function buildRunnerlessJobRequest(
   if (options.traceId) {
     metadata.trace_id = options.traceId;
   }
+
+  metadata.finops = options.finops ?? DEFAULT_FINOPS_METADATA;
 
   return JobRequestSchema.parse({
     version: '1.0.0',
@@ -340,7 +361,8 @@ export function createOpsJobBatch(
     allJobs.push(...createReliabilityReportJobs(tenantContext, report, options));
   }
 
-  return batchJobRequests(allJobs);
+  const boundedJobs = allJobs.slice(0, MAX_JOB_REQUESTS_PER_BATCH);
+  return batchJobRequests(boundedJobs);
 }
 
 export function createJobBatch(requests: JobRequest[]): JobBatch {

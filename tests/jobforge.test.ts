@@ -3,9 +3,12 @@ import {
   createAlertCorrelationRequest,
   createRunbookGenerationRequest,
   createReliabilityReportRequest,
+  createOpsJobBatch,
+  MAX_JOB_REQUESTS_PER_BATCH,
   validateJobRequest,
 } from '../src/jobforge/index.js';
 import type { TenantContext } from '../src/contracts/index.js';
+import type { Runbook } from '../src/contracts/index.js';
 
 describe('JobForge Request Generation', () => {
   const tenantContext: TenantContext = {
@@ -36,6 +39,7 @@ describe('JobForge Request Generation', () => {
       expect(request.policy.requires_approval).toBe(true);
       expect(request.policy.requires_policy_token).toBe(true);
       expect(request.metadata.runnerless).toBe(true);
+      expect(request.metadata.finops).toBeDefined();
     });
   });
 
@@ -72,6 +76,7 @@ describe('JobForge Request Generation', () => {
       expect(request.policy.requires_approval).toBe(true);
       expect(request.policy.requires_policy_token).toBe(true);
       expect(request.metadata.runnerless).toBe(true);
+      expect(request.metadata.finops).toBeDefined();
     });
   });
 
@@ -126,6 +131,38 @@ describe('JobForge Request Generation', () => {
       expect(request.policy.requires_approval).toBe(true);
       expect(request.policy.requires_policy_token).toBe(true);
       expect(request.metadata.runnerless).toBe(true);
+      expect(request.metadata.finops).toBeDefined();
+    });
+  });
+
+  describe('createOpsJobBatch', () => {
+    it('should cap batch size to avoid unbounded cost', () => {
+      const runbooks: Runbook[] = Array.from({ length: MAX_JOB_REQUESTS_PER_BATCH }, (_, i) => ({
+        runbook_id: `rb-${i}`,
+        tenant_id: 'test-tenant',
+        project_id: 'test-project',
+        name: `Runbook ${i}`,
+        description: 'Generated runbook',
+        trigger_conditions: [],
+        severity: 'critical',
+        estimated_duration_minutes: 30,
+        steps: [
+          {
+            step_number: 1,
+            title: 'Restart service',
+            description: 'Restart the service',
+            automated: true,
+            requires_approval: false,
+          },
+        ],
+        prerequisites: [],
+        post_conditions: [],
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
+      }));
+
+      const batch = createOpsJobBatch(tenantContext, undefined, runbooks);
+      expect(batch.requests.length).toBeLessThanOrEqual(MAX_JOB_REQUESTS_PER_BATCH);
     });
   });
 

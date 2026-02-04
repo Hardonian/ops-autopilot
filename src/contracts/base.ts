@@ -168,10 +168,12 @@ export type CapabilityMetadata = z.infer<typeof CapabilityMetadataSchema>;
 /**
  * Health audit input schema
  */
+export const MAX_SERVICES_PER_AUDIT = 25;
+
 export const HealthAuditInputSchema = z.object({
   tenant_id: IdentifierSchema,
   project_id: IdentifierSchema,
-  services: z.array(z.string()).optional(),
+  services: z.array(z.string()).max(MAX_SERVICES_PER_AUDIT).optional(),
   include_metrics: z.array(z.string()).optional(),
   audit_depth: z.enum(['surface', 'standard', 'deep']).default('standard'),
   time_range: z
@@ -206,6 +208,7 @@ export const HealthAuditOutputSchema = z.object({
     completed_at: ISODateTimeSchema,
     attempts: z.number().int(),
     execution_time_ms: z.number().int(),
+    cost_usd_estimate: z.number().min(0),
   }),
   idempotency_key: z.string().optional(),
 });

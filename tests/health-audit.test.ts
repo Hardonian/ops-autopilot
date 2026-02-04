@@ -11,7 +11,7 @@ import {
   validateHealthAuditInput,
   _resetCircuitBreakerForTesting,
 } from '../src/capabilities/health-audit.js';
-import { HealthAuditCapabilityMetadata } from '../src/contracts/index.js';
+import { HealthAuditCapabilityMetadata, MAX_SERVICES_PER_AUDIT } from '../src/contracts/index.js';
 
 describe('Health Audit Capability', () => {
   beforeEach(() => {
@@ -89,6 +89,16 @@ describe('Health Audit Capability', () => {
       expect(validated.audit_depth).toBe('standard');
       expect(validated.services).toBeUndefined();
     });
+
+    it('should enforce service count limits to bound cost', () => {
+      const input = {
+        tenant_id: 'test-tenant',
+        project_id: 'test-project',
+        services: Array.from({ length: MAX_SERVICES_PER_AUDIT + 1 }, (_, index) => `svc-${index}`),
+      };
+
+      expect(() => validateHealthAuditInput(input)).toThrow();
+    });
   });
 
   describe('Happy Path', () => {
@@ -114,6 +124,7 @@ describe('Health Audit Capability', () => {
       expect(result.findings).toHaveLength(0);
       expect(result.execution_metadata.attempts).toBe(1);
       expect(result.execution_metadata.execution_time_ms).toBeGreaterThanOrEqual(0);
+      expect(result.execution_metadata.cost_usd_estimate).toBeGreaterThan(0);
       expect(result.idempotency_key).toBe('test-key-1');
     });
 

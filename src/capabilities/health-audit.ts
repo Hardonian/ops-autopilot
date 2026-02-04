@@ -239,6 +239,23 @@ interface AuditDependencies {
   }>;
 }
 
+const DEFAULT_SERVICES = ['api', 'database', 'cache', 'queue'];
+const COST_PER_SERVICE_USD = 0.02;
+const AUDIT_DEPTH_MULTIPLIER: Record<HealthAuditInput['audit_depth'], number> = {
+  surface: 0.8,
+  standard: 1,
+  deep: 1.5,
+};
+
+function estimateAuditCost(
+  serviceCount: number,
+  auditDepth: HealthAuditInput['audit_depth'],
+  attempts: number
+): number {
+  const base = serviceCount * COST_PER_SERVICE_USD * AUDIT_DEPTH_MULTIPLIER[auditDepth];
+  return Number((base * Math.max(attempts, 1)).toFixed(4));
+}
+
 async function performAudit(
   input: HealthAuditInput,
   deps: AuditDependencies,
@@ -249,7 +266,7 @@ async function performAudit(
   const startTime = Date.now();
   const auditId = generateId();
 
-  const services = input.services ?? ['api', 'database', 'cache', 'queue'];
+  const services = input.services ?? DEFAULT_SERVICES;
   const servicesAudited: string[] = [];
   const findings: HealthAuditOutput['findings'] = [];
   const metrics: Record<string, number> = {};
@@ -358,6 +375,7 @@ async function performAudit(
 
   const completedAt = new Date().toISOString();
   const executionTimeMs = Date.now() - startTime;
+  const costEstimate = estimateAuditCost(servicesAudited.length, input.audit_depth, attempt);
 
   return HealthAuditOutputSchema.parse({
     audit_id: auditId,
@@ -371,6 +389,7 @@ async function performAudit(
       completed_at: completedAt,
       attempts: attempt,
       execution_time_ms: executionTimeMs,
+      cost_usd_estimate: costEstimate,
     },
     idempotency_key: idempotencyKey,
   });
@@ -415,6 +434,7 @@ export async function executeHealthAudit(
 
   // Generate or use provided idempotency key
   const idempotencyKey = validatedInput.idempotency_key ?? randomUUID();
+  const serviceCount = validatedInput.services?.length ?? DEFAULT_SERVICES.length;
 
   // Check idempotency store (unless skipped for testing)
   if (!options.skipIdempotency) {
@@ -459,6 +479,7 @@ export async function executeHealthAudit(
         completed_at: new Date().toISOString(),
         attempts: 0,
         execution_time_ms: 0,
+        cost_usd_estimate: 0,
       },
       idempotency_key: idempotencyKey,
     });
@@ -523,6 +544,7 @@ export async function executeHealthAudit(
           completed_at: new Date().toISOString(),
           attempts: attempt,
           execution_time_ms: Date.now() - startTime,
+          cost_usd_estimate: estimateAuditCost(serviceCount, validatedInput.audit_depth, attempt),
         },
         idempotency_key: idempotencyKey,
       });
@@ -585,6 +607,11 @@ export async function executeHealthAudit(
       completed_at: new Date().toISOString(),
       attempts: retry_policy.max_attempts,
       execution_time_ms: Date.now() - startTime,
+      cost_usd_estimate: estimateAuditCost(
+        serviceCount,
+        validatedInput.audit_depth,
+        retry_policy.max_attempts
+      ),
     },
     idempotency_key: idempotencyKey,
   });
