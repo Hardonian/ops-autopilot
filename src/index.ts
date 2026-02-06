@@ -204,6 +204,51 @@ export {
 } from './capabilities/health-audit.js';
 
 // ============================================================================
+// Runner Standard Library Exports
+// ============================================================================
+
+export {
+  // Error envelopes
+  type ErrorEnvelope,
+  RunnerError,
+  validationError,
+  dependencyError,
+  bugError,
+  toErrorEnvelope,
+  exitCodeForError,
+  EXIT_SUCCESS,
+  EXIT_VALIDATION,
+  EXIT_DEPENDENCY,
+  EXIT_BUG,
+
+  // Logger
+  Logger,
+  type LogLevel,
+  type LogEntry,
+  type LoggerOptions,
+
+  // Artifacts
+  ArtifactWriter,
+  loadArtifacts,
+  type ArtifactSummary,
+  type ArtifactWriterOptions,
+
+  // Redaction
+  redact,
+  redactString,
+  DEFAULT_DENY_KEYS,
+  REDACTED,
+  type RedactOptions,
+
+  // Retry
+  withRetry,
+  generateIdempotencyKey,
+  DEFAULT_RETRY_POLICY,
+  type RetryPolicy,
+  type RetryResult,
+} from './runner-std/index.js';
+
+// ============================================================================
 // Version
 // ============================================================================
 
