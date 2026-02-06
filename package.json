@@ -21,14 +21,18 @@
     "./profiles": {
       "import": "./dist/profiles/index.js",
       "types": "./dist/profiles/index.d.ts"
+    },
+    "./runner-std": {
+      "import": "./dist/runner-std/index.js",
+      "types": "./dist/runner-std/index.d.ts"
     }
   },
   "bin": {
     "ops-autopilot": "./dist/cli.js"
   },
   "scripts": {
-    "build:deps": "cd autopilot-suite && pnpm install && pnpm build",
-    "build": "pnpm build:deps && tsup src/index.ts src/cli.ts src/contracts/index.ts src/jobforge/index.ts src/profiles/index.ts --format esm --dts --clean",
+    "build:deps": "node ./scripts/build-local-deps.js",
+    "build": "pnpm build:deps && tsup src/index.ts src/cli.ts src/contracts/index.ts src/jobforge/index.ts src/profiles/index.ts src/runner-std/index.ts --format esm --dts --clean",
     "dev": "tsup src/index.ts src/cli.ts --format esm --dts --watch",
     "lint": "eslint src --max-warnings=0",
     "typecheck": "tsc --noEmit",
@@ -39,6 +43,10 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\" \"tests/**/*.{ts,tsx}\" \"*.md\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,md}\" \"tests/**/*.{ts,tsx}\" \"*.md\"",
     "cli": "node ./dist/cli.js",
+    "plan": "pnpm build && node ./dist/cli.js plan --inputs ./examples/jobforge-input.json --tenant tenant-demo --project project-demo --trace trace-plan --out ./artifacts --stable-output",
+    "run:smoke": "pnpm build && node ./dist/cli.js run --inputs ./examples/jobforge-input.json --tenant tenant-demo --project project-demo --trace trace-smoke --out ./artifacts --smoke --stable-output",
+    "doctor": "pnpm build && node ./dist/cli.js doctor",
+    "contracts:check": "pnpm build && node ./dist/cli.js contracts:check",
     "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm build && pnpm test",
     "verify:fast": "pnpm lint && pnpm typecheck && pnpm build",
     "verify:full": "pnpm verify:fast && pnpm test",

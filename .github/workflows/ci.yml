@@ -23,12 +23,22 @@ jobs:
           version: 9
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Verify fast
+      - name: Verify fast (lint + typecheck + build)
         run: pnpm verify:fast
       - name: Verify JobForge contracts compatibility
         run: pnpm contracts:compat
       - name: Run contract tests
         run: pnpm test -- tests/contracts.test.ts
+      - name: Run runner-std tests
+        run: pnpm test -- tests/runner-std.test.ts
+      - name: Plan (dry-run smoke)
+        run: pnpm plan
+      - name: Run --smoke
+        run: pnpm run:smoke
+      - name: Doctor
+        run: pnpm doctor
+      - name: Contracts check
+        run: pnpm contracts:check
 
   contract-tests:
     if: github.event_name == 'pull_request'
@@ -69,9 +79,17 @@ jobs:
           version: 9
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Verify full
+      - name: Verify full (lint + typecheck + build + test)
         run: pnpm verify:full
       - name: Verify JobForge contracts compatibility
         run: pnpm contracts:compat
       - name: Verify docs
         run: pnpm docs:verify
+      - name: Plan (dry-run smoke)
+        run: pnpm plan
+      - name: Run --smoke
+        run: pnpm run:smoke
+      - name: Doctor
+        run: pnpm doctor
+      - name: Contracts check
+        run: pnpm contracts:check
