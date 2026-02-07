@@ -55,6 +55,7 @@ import {
   EXIT_BUG,
   type ArtifactSummary,
 } from './runner-std/index.js';
+import { runDemo } from './runner.js';
 
 /**
  * Ops Autopilot CLI
@@ -112,12 +113,7 @@ function createRunContext(options: {
   return { logger, artifacts, runId, dryRun, json };
 }
 
-function handleError(
-  error: unknown,
-  ctx: RunContext,
-  command: string,
-  startedAt: string
-): never {
+function handleError(error: unknown, ctx: RunContext, command: string, startedAt: string): never {
   const envelope = toErrorEnvelope(error);
   const exitCode = exitCodeForError(error);
 
@@ -326,7 +322,10 @@ program
 
       // Write standard flat output files
       mkdirSync(options.out, { recursive: true });
-      writeFileSync(join(options.out, 'request-bundle.json'), serializeBundle(result.jobRequestBundle));
+      writeFileSync(
+        join(options.out, 'request-bundle.json'),
+        serializeBundle(result.jobRequestBundle)
+      );
       writeFileSync(join(options.out, 'report.json'), serializeReport(result.reportEnvelope));
       writeFileSync(join(options.out, 'report.md'), renderReport(result.reportEnvelope));
 
@@ -405,7 +404,9 @@ program
     checks.push({
       name: 'fixtures',
       status: fixturesExist ? 'ok' : 'warn',
-      message: fixturesExist ? 'Fixtures directory present' : 'Fixtures not found (run fixtures:export)',
+      message: fixturesExist
+        ? 'Fixtures directory present'
+        : 'Fixtures not found (run fixtures:export)',
     });
 
     // Check examples exist
@@ -438,9 +439,7 @@ program
     const hasFailure = checks.some(c => c.status === 'fail');
 
     if (options.json) {
-      process.stdout.write(
-        JSON.stringify({ checks, healthy: !hasFailure }, null, 2) + '\n'
-      );
+      process.stdout.write(JSON.stringify({ checks, healthy: !hasFailure }, null, 2) + '\n');
     } else {
       for (const check of checks) {
         const icon = check.status === 'ok' ? 'OK' : check.status === 'warn' ? 'WARN' : 'FAIL';
@@ -509,34 +508,22 @@ program
 
       if (options.json) {
         process.stdout.write(
-          JSON.stringify(
-            { results, allValid, checkedAt: startedAt },
-            null,
-            2
-          ) + '\n'
+          JSON.stringify({ results, allValid, checkedAt: startedAt }, null, 2) + '\n'
         );
       } else {
         for (const r of results) {
           const icon = r.valid ? 'OK' : 'FAIL';
-          process.stderr.write(
-            `[${icon}] ${r.schema}${r.error ? `: ${r.error}` : ''}\n`
-          );
+          process.stderr.write(`[${icon}] ${r.schema}${r.error ? `: ${r.error}` : ''}\n`);
         }
-        process.stderr.write(
-          allValid ? '\nAll contracts valid.\n' : '\nContract check failed.\n'
-        );
+        process.stderr.write(allValid ? '\nAll contracts valid.\n' : '\nContract check failed.\n');
       }
 
       process.exit(allValid ? EXIT_SUCCESS : EXIT_VALIDATION);
     } catch (error) {
       if (options.json) {
-        process.stdout.write(
-          JSON.stringify(toErrorEnvelope(error), null, 2) + '\n'
-        );
+        process.stdout.write(JSON.stringify(toErrorEnvelope(error), null, 2) + '\n');
       } else {
-        process.stderr.write(
-          `Error: ${error instanceof Error ? error.message : String(error)}\n`
-        );
+        process.stderr.write(`Error: ${error instanceof Error ? error.message : String(error)}\n`);
       }
       process.exit(EXIT_BUG);
     }
@@ -654,9 +641,7 @@ program
         manifest_path: options.manifest,
         profile_id: options.profile,
         time_range:
-          options.start && options.end
-            ? { start: options.start, end: options.end }
-            : undefined,
+          options.start && options.end ? { start: options.start, end: options.end } : undefined,
       };
 
       const validated = IngestInputSchema.parse(input) as IngestInput;
@@ -991,6 +976,63 @@ program
   });
 
 // ============================================================================
+// Demo Command (demonstrate runner execution)
+// ============================================================================
+
+program
+  .command('demo')
+  .description('Run a demo execution of the ops autopilot runner')
+  .option('--tenant <tenant>', 'Tenant ID for demo', 'demo-tenant')
+  .option('--project <project>', 'Project ID for demo', 'demo-project')
+  .option('--out <dir>', 'Artifact output directory', './artifacts')
+  .option('--json', 'Emit JSON output to stdout', false)
+  .action(async options => {
+    const startedAt = new Date().toISOString();
+    const ctx = createRunContext({ out: options.out, json: options.json, dryRun: false });
+
+    try {
+      ctx.logger.info('demo: starting', { tenant: options.tenant, project: options.project });
+
+      const result = await runDemo({
+        tenantId: options.tenant,
+        projectId: options.project,
+      });
+
+      ctx.logger.info('demo: completed', {
+        status: result.status,
+        hasOutput: !!result.output,
+        hasError: !!result.error,
+      });
+
+      if (ctx.json) {
+        process.stdout.write(
+          JSON.stringify(
+            {
+              status: 'success',
+              runId: ctx.runId,
+              demoResult: result,
+              artifactDir: ctx.artifacts.dir,
+            },
+            null,
+            2
+          ) + '\n'
+        );
+      } else {
+        console.log('Demo execution completed');
+        console.log(`Status: ${result.status}`);
+        if (result.error) {
+          console.log(`Error: ${result.error}`);
+        }
+        console.log(`Evidence: ${ctx.artifacts.dir}/evidence.json`);
+      }
+
+      finishSuccess(ctx, 'demo', startedAt, result);
+    } catch (error) {
+      handleError(error, ctx, 'demo', startedAt);
+    }
+  });
+
+// ============================================================================
 // Replay Command (reuse artifacts for diagnosis)
 // ============================================================================
 
@@ -1011,7 +1053,11 @@ program
 
       if (options.json) {
         process.stdout.write(
-          JSON.stringify({ summary, logCount: logs.length, evidenceFiles: Object.keys(evidence) }, null, 2) + '\n'
+          JSON.stringify(
+            { summary, logCount: logs.length, evidenceFiles: Object.keys(evidence) },
+            null,
+            2
+          ) + '\n'
         );
       } else {
         process.stderr.write(`Run ID: ${summary.runId}\n`);

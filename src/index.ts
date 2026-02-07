@@ -204,6 +204,27 @@ export {
 } from './capabilities/health-audit.js';
 
 // ============================================================================
+// Runner Contract Exports
+// ============================================================================
+
+export {
+  RunnerContractSchema,
+  ExecuteResultSchema,
+  type RunnerContract,
+  type ExecuteResult,
+  type EvidencePacket,
+  generateEvidencePacket,
+  generateEvidenceMarkdown,
+} from './contracts/runner-contract.js';
+
+export {
+  OpsAutopilotRunner,
+  createOpsAutopilotRunner,
+  runDemo,
+  validateRunnerContract,
+} from './runner.js';
+
+// ============================================================================
 // Runner Standard Library Exports
 // ============================================================================
 
