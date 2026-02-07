@@ -6,6 +6,12 @@ A runnerless reliability autopilot that consumes events/manifests/log summaries,
 
 Ops Autopilot is part of the `@autopilot/*` suite. It provides:
 
+- **Runner Contract**: Safe, provable execution interface for ControlPlane integration
+- **Alert Correlation**: Groups related infrastructure alerts to identify root causes and reduce noise
+- **Runbook Generation**: Creates incident response runbooks from correlated alert groups
+- **Reliability Reporting**: Generates health checks, trend analyses, and incident postmortems
+- **JobForge Integration**: Outputs job requests for ops tasks (alert correlation, runbook generation, reliability reports)
+
 - **Alert Correlation**: Groups related infrastructure alerts to identify root causes and reduce noise
 - **Runbook Generation**: Creates incident response runbooks from correlated alert groups
 - **Reliability Reporting**: Generates health checks, trend analyses, and incident postmortems
@@ -80,6 +86,7 @@ ops-autopilot report \
 | `runbook`   | Generate runbook from alert group              | `ops-autopilot runbook --tenant t --project p --file ./alert-group.json --jobs`                                                  |
 | `report`    | Generate reliability report                    | `ops-autopilot report --tenant t --project p --type health_check --start 2026-01-01T00:00:00Z --end 2026-01-31T23:59:59Z --jobs` |
 | `analyze`   | JobForge integration surface (bundle + report) | `ops-autopilot analyze --inputs ./fixtures/jobforge/input.json --tenant t --project p --trace trace --out ./out`                 |
+| `demo`      | Run deterministic demo execution               | `ops-autopilot demo --tenant demo-tenant --project demo-project`                                                                 |
 
 ## JobForge Integration
 
@@ -102,6 +109,78 @@ ops-autopilot analyze \
 ```
 
 See [docs/jobforge-integration.md](./docs/jobforge-integration.md) for bundle validation and ingestion guidance.
+
+## ControlPlane Runner Integration
+
+Ops Autopilot implements the Runner Contract for safe, provable execution via ControlPlane:
+
+### Runner Contract
+
+```typescript
+interface RunnerContract {
+  id: string; // Runner identifier
+  version: string; // Semantic version
+  capabilities: string[]; // Available capabilities
+  blastRadius: string; // 'isolated' | 'service' | 'infrastructure' | 'environment' | 'global'
+  execute(input: unknown): Promise<ExecuteResult>;
+}
+
+interface ExecuteResult {
+  status: 'success' | 'failure';
+  output: unknown;
+  evidence: {
+    json: Record<string, unknown>; // Evidence packet
+    markdown: string; // Summary report
+  };
+  error?: string;
+}
+```
+
+### ControlPlane Usage
+
+```typescript
+import { createOpsAutopilotRunner } from '@autopilot/ops-autopilot/runner';
+
+// Create runner instance
+const runner = createOpsAutopilotRunner();
+
+// Execute via ControlPlane
+const result = await runner.execute({
+  tenant_id: 'acme-prod',
+  project_id: 'api-platform',
+  services: ['api', 'database'],
+  audit_depth: 'standard',
+});
+
+// Check result
+if (result.status === 'success') {
+  console.log('Audit completed:', result.output);
+  console.log('Evidence:', result.evidence.markdown);
+} else {
+  console.error('Audit failed:', result.error);
+}
+```
+
+### Demo Run
+
+Run a deterministic demo to test runner functionality:
+
+```bash
+# CLI demo
+ops-autopilot demo
+
+# Or programmatically
+import { runDemo } from '@autopilot/ops-autopilot/runner';
+const result = await runDemo({ tenantId: 'demo-tenant', projectId: 'demo-project' });
+```
+
+### Safety Guarantees
+
+- **Never crashes**: `execute()` always returns a result object
+- **Provable execution**: Evidence packet tracks inputs, decisions, outputs
+- **Idempotent**: Same input produces same output (with idempotency key)
+- **Resource bounded**: Circuit breaker and timeout protection
+- **Cost controlled**: Budget and blast radius enforcement
 
 ### Programmatic Usage
 
@@ -182,18 +261,23 @@ console.log(jobRequestBundle, markdown);
 
 ```
 src/
-├── contracts/      # Domain-specific Zod schemas
-│   └── index.ts    # Alert, AlertCorrelation, Runbook, ReliabilityReport schemas
-├── alerts/         # Alert correlation logic
-│   └── index.ts    # Correlate, filter, validate alerts
-├── runbooks/       # Runbook generation
-│   └── index.ts    # Generate runbooks from alert groups
-├── jobforge/       # Job request generators
-│   └── index.ts    # Ops job requests (alert_correlate, runbook_generate, reliability_report)
-├── profiles/       # Base + per-app overlays
-│   └── index.ts    # Ops-specific profile configurations
-├── cli.ts          # CLI entrypoint
-└── index.ts        # Public API exports
+├── contracts/         # Domain-specific Zod schemas
+│   ├── index.ts       # Alert, AlertCorrelation, Runbook, ReliabilityReport schemas
+│   ├── runner-contract.ts  # Runner Contract for ControlPlane
+│   └── base.ts        # Base schemas and types
+├── runner.ts          # Runner Contract implementation
+├── alerts/            # Alert correlation logic
+│   └── index.ts       # Correlate, filter, validate alerts
+├── runbooks/          # Runbook generation
+│   └── index.ts       # Generate runbooks from alert groups
+├── jobforge/          # Job request generators
+│   └── index.ts       # Ops job requests (alert_correlate, runbook_generate, reliability_report)
+├── profiles/          # Base + per-app overlays
+│   └── index.ts       # Ops-specific profile configurations
+├── capabilities/      # Core capabilities (health audit)
+│   └── health-audit.ts # Health audit implementation
+├── cli.ts             # CLI entrypoint
+└── index.ts           # Public API exports
 ```
 
 ### Integration with Autopilot Suite
