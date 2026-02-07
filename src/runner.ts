@@ -7,12 +7,11 @@
 
 import { randomUUID } from 'crypto';
 import {
-  RunnerContract,
-  ExecuteResult,
   generateEvidencePacket,
   generateEvidenceMarkdown,
   RunnerContractSchema,
 } from './contracts/runner-contract.js';
+import type { RunnerContract, ExecuteResult } from './contracts/runner-contract.js';
 import { executeHealthAudit } from './capabilities/health-audit.js';
 import { HealthAuditInputSchema } from './contracts/index.js';
 
