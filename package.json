@@ -36,7 +36,7 @@
   },
   "scripts": {
     "build:deps": "node ./scripts/build-local-deps.js",
-    "build": "pnpm build:deps && tsup src/index.ts src/cli.ts src/contracts/index.ts src/jobforge/index.ts src/profiles/index.ts src/runner-std/index.ts src/runner.ts --format esm --dts --clean",
+    "build": "pnpm build:deps && tsup src/index.ts src/cli.ts src/contracts/index.ts src/jobforge/index.ts src/jobforge/integration.ts src/profiles/index.ts src/runner-std/index.ts src/runner.ts --format esm --dts --clean",
     "dev": "tsup src/index.ts src/cli.ts --format esm --dts --watch",
     "lint": "eslint src --max-warnings=0",
     "typecheck": "tsc --noEmit",

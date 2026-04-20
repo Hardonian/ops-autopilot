@@ -1,7 +1,7 @@
 {
   "canonicalization": {
     "algorithm": "json-lexicographic",
-    "hash": "7a198accc0df46bcaa58baa9dd96596cbe3a1fb2e261ba13fb003ea94410fc53",
+    "hash": "154027f5aa70963873ea966e97c48b8e001257ea2e076ea7849c6f090d2fb906",
     "hash_algorithm": "sha256"
   },
   "created_at": "2000-01-01T00:00:00.000Z",
@@ -42,6 +42,13 @@
         "evidence_links": [],
         "job_type": "autopilot.ops.alert_correlate",
         "metadata": {
+          "finops": {
+            "budget_usd": 50,
+            "cost_center": "ops-reliability",
+            "estimated_cost_usd": 0.5,
+            "max_cost_usd": 2,
+            "owner": "ops-finops"
+          },
           "idempotency_key": "d43bb2f52ebf304af94ac626b459b601cb2bbaac047322c4f0f7c9aab3de96df",
           "runnerless": true,
           "trace_id": "trace-demo",
@@ -80,6 +87,13 @@
         "evidence_links": [],
         "job_type": "autopilot.ops.reliability_report",
         "metadata": {
+          "finops": {
+            "budget_usd": 50,
+            "cost_center": "ops-reliability",
+            "estimated_cost_usd": 0.5,
+            "max_cost_usd": 2,
+            "owner": "ops-finops"
+          },
           "idempotency_key": "5bfbd0aa1b0ce0112198818fc76e72abb506d2287ee83eefe25b44f057b82790",
           "runnerless": true,
           "trace_id": "trace-demo",
@@ -142,6 +156,13 @@
           "evidence_links": [],
           "job_type": "autopilot.ops.alert_correlate",
           "metadata": {
+            "finops": {
+              "budget_usd": 50,
+              "cost_center": "ops-reliability",
+              "estimated_cost_usd": 0.5,
+              "max_cost_usd": 2,
+              "owner": "ops-finops"
+            },
             "idempotency_key": "d43bb2f52ebf304af94ac626b459b601cb2bbaac047322c4f0f7c9aab3de96df",
             "runnerless": true,
             "trace_id": "trace-demo",
