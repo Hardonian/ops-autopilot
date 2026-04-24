@@ -3,4 +3,7 @@ dist/
 examples/output.tmp/
 autopilot-suite/packages/**/dist/
 artifacts/
-nul
+
+# OS files
+.DS_Store
+Thumbs.db
