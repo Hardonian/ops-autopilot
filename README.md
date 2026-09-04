@@ -1,5 +1,9 @@
 # Ops Autopilot
 
+<!-- BEGIN: REPO HERO -->
+![ops-autopilot — hero generated locally on the GPU stack](assets/repo-hero.png)
+<!-- END: REPO HERO -->
+
 A runnerless reliability autopilot that consumes events/manifests/log summaries, detects anomalies, produces diagnoses + recommendations, and outputs JobForge job requests (or runbooks) WITHOUT owning execution. JobForge executes any remediation via gated action jobs.
 
 ## Overview
