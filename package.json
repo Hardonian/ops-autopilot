@@ -64,7 +64,7 @@
     "@autopilot/jobforge-client": "file:./autopilot-suite/packages/jobforge-client",
     "@autopilot/profiles": "file:./autopilot-suite/packages/profiles",
     "commander": "^15.0.0",
-    "zod": "^3.23.8"
+    "zod": "^4.6.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
